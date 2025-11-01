@@ -114,6 +114,12 @@ h1{
 .theme-dot[data-theme="orange"] { background-color: #ff9f0a; }
 .theme-dot[data-theme="blue"] { background-color: #0a84ff; }
 .theme-dot[data-theme="purple"] { background-color: #bf5af2; }
+.theme-dot[data-theme="brown"]   { background-color: #a0522d; } /* Sienna */
+.theme-dot[data-theme="teal"]    { background-color: #008080; }
+.theme-dot[data-theme="charcoal"]{ background-color: #333333; }
+.theme-dot[data-theme="maroon"]  { background-color: #800000; }
+.theme-dot[data-theme="custom"]  { background-color: #ffcc00; } /* or any custom color */
+
 .theme-dot:hover { transform: scale(1.08); filter: brightness(1.08); }
 .theme-dot:hover{ transform:scale(1.08); filter:brightness(1.08); }
 
@@ -951,47 +957,39 @@ document.addEventListener('DOMContentLoaded', () => {
   function openGoto(open) { gotoOpen = open; if (gotoPanel) gotoPanel.style.display = open ? 'block' : 'none'; if (gotoToggle) gotoToggle.textContent = open ? 'Go to ▴' : 'Go to ▾'; }
   if (gotoToggle) { gotoToggle.addEventListener('click', () => openGoto(!gotoOpen)); }
 
-  /*** Transliteration toggle (fixed) ***/
-let translitState = 'english'; // initial state
-let showTranslit = true;       // initialize properly for English
+ // Only declare translitState once
+let translitState = 'english';
+showTranslit = true; // assign, do not redeclare elsewhere
 
-// Function to determine folder and toggle
 async function loadTranslitCues(dashNum = null) {
-  dashNum = dashNum || String(currentDashakam).padStart(3, '0');
-  let vttFolder = 'vtt_transliterated';
-  if (translitState === 'english') vttFolder = 'vtt_transliterated';
-  else if (translitState === 'devanagari') vttFolder = 'vtt_fixed_output';
-  else if (translitState === 'malayalam') vttFolder = 'vtt_malayalam';
+    dashNum = dashNum || String(currentDashakam).padStart(3, '0');
+    let vttFolder = 'vtt_transliterated';
+    if (translitState === 'english') vttFolder = 'vtt_transliterated';
+    else if (translitState === 'devanagari') vttFolder = 'vtt_fixed_output';
+    else if (translitState === 'malayalam') vttFolder = 'vtt_malayalam';
 
-  cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
+    cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
 
-  // set showTranslit based on state
-  showTranslit = translitState === 'english' || translitState === 'malayalam';
+    showTranslit = translitState === 'english' || translitState === 'malayalam';
 
-  // update current verse
-  const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
-  if (cues.length > 0) updateSubtitle(idx);
+    const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
+    if (cues.length > 0) updateSubtitle(idx);
 }
 
 // Initial load
 loadTranslitCues();
 
-/*** Transliteration toggle button ***/
+// Button toggle
 if (translitToggle) {
-  translitToggle.addEventListener('click', async () => {
-    // Cycle states
-    if (translitState === 'english') translitState = 'devanagari';
-    else if (translitState === 'devanagari') translitState = 'malayalam';
-    else translitState = 'english';
+    translitToggle.addEventListener('click', async () => {
+        translitState = translitState === 'english' ? 'devanagari' :
+                        translitState === 'devanagari' ? 'malayalam' : 'english';
 
-    // Update button text
-    if (translitState === 'english') translitToggle.textContent = 'English Transliteration';
-    else if (translitState === 'devanagari') translitToggle.textContent = 'Devanagari';
-    else translitToggle.textContent = 'Malayalam';
+        translitToggle.textContent = translitState === 'english' ? 'English Transliteration' :
+                                     translitState === 'devanagari' ? 'Devanagari' : 'Malayalam';
 
-    // Reload VTT cues for current Dashakam
-    await loadTranslitCues();
-  });
+        await loadTranslitCues();
+    });
 }
 
 
@@ -1043,50 +1041,7 @@ if (translitToggle) {
      ============================ */
 
   /* THEME & FONT handling functions (kept) */
-const themes = {
-  dark: { 
-    primary: "#1c1c1e", 
-    "primary-dark": "#121212", 
-    "primary-light": "#2c2c2e", 
-    bg: "#000000", 
-    text: "#ffffff" 
-  },
-  light: { 
-    primary: "#f2f2f7", 
-    "primary-dark": "#d1d1d6", 
-    "primary-light": "#ffffff", 
-    bg: "#ffffff", 
-    text: "#1c1c1e" 
-  },
-  pink: { 
-    primary: "#ff375f", 
-    "primary-dark": "#bf0f3f", 
-    "primary-light": "#ff8fa0", 
-    bg: "#fff0f2", 
-    text: "#3c003c" 
-  },
-  purple: { 
-    primary: "#bf5af2", 
-    "primary-dark": "#7321bf", 
-    "primary-light": "#dab6f7", 
-    bg: "#f7f0ff", 
-    text: "#2c004c" 
-  },
-  blue: { 
-    primary: "#0a84ff", 
-    "primary-dark": "#0050cc", 
-    "primary-light": "#a6d1ff", 
-    bg: "#f0f8ff", 
-    text: "#003366" 
-  },
-  orange: { 
-    primary: "#ff9500", 
-    "primary-dark": "#cc7000", 
-    "primary-light": "#ffd49c", 
-    bg: "#fff6ed", 
-    text: "#663800" 
-  }
-};
+
 
 
   function applyTheme(themeName) {
