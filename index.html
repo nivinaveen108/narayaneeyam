@@ -1026,29 +1026,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  /*** Build UI and initial load ***/
-  initThemeDots();
-  initSpeedButton();
-  initFontSelectors();
-  initFontSizeControls();
-  buildGroupGrid();
-  loadDashakam('001').catch(e => console.error('initial loadDashakam error', e));
-
-  /* ============================
+ /* ============================
      Tiny helpers (these are exactly the same you had)
      ============================ */
 
   /* THEME & FONT handling functions (kept) */
-  const themes = {
-    green: { primary: "#3d8140", "primary-dark": "#235026", "primary-light": "#a4d4a6", bg: "#f2f8f3", text: "#143215" },
-    blue: { primary: "#1e88e5", "primary-dark": "#0b5394", "primary-light": "#a4c2f4", bg: "#eef5ff", text: "#062a6e" },
-    brown: { primary: "#a97442", "primary-dark": "#5c3a16", "primary-light": "#deb887", bg: "#f9f5f1", text: "#4b2a0f" },
-    purple: { primary: "#7b4fb5", "primary-dark": "#452465", "primary-light": "#d0b0ff", bg: "#f7f1fb", text: "#2d184a" },
-    teal: { primary: "#0fa3a3", "primary-dark": "#064f4f", "primary-light": "#97d8d8", bg: "#f1fbfb", text: "#083838" },
-    charcoal: { primary: "#6b6f76", "primary-dark": "#3c3f44", "primary-light": "#c2c3c7", bg: "#f4f4f5", text: "#222325" },
-    maroon: { primary: "#8c2b2b", "primary-dark": "#4d0e0e", "primary-light": "#e09b9b", bg: "#fff4f4", text: "#3c1a1a" },
-    custom: { primary: "#f1948a", "primary-dark": "#b85449", "primary-light": "#f8c471", bg: "#fffaf3", text: "#4a2c23" }
-  };
+const themes = {
+  dark: { 
+    primary: "#1c1c1e", 
+    "primary-dark": "#121212", 
+    "primary-light": "#2c2c2e", 
+    bg: "#000000", 
+    text: "#ffffff" 
+  },
+  light: { 
+    primary: "#f2f2f7", 
+    "primary-dark": "#d1d1d6", 
+    "primary-light": "#ffffff", 
+    bg: "#ffffff", 
+    text: "#1c1c1e" 
+  },
+  pink: { 
+    primary: "#ff375f", 
+    "primary-dark": "#bf0f3f", 
+    "primary-light": "#ff8fa0", 
+    bg: "#fff0f2", 
+    text: "#3c003c" 
+  },
+  purple: { 
+    primary: "#bf5af2", 
+    "primary-dark": "#7321bf", 
+    "primary-light": "#dab6f7", 
+    bg: "#f7f0ff", 
+    text: "#2c004c" 
+  },
+  blue: { 
+    primary: "#0a84ff", 
+    "primary-dark": "#0050cc", 
+    "primary-light": "#a6d1ff", 
+    bg: "#f0f8ff", 
+    text: "#003366" 
+  },
+  orange: { 
+    primary: "#ff9500", 
+    "primary-dark": "#cc7000", 
+    "primary-light": "#ffd49c", 
+    bg: "#fff6ed", 
+    text: "#663800" 
+  }
+};
+
 
   function applyTheme(themeName) {
     const vars = themes[themeName];
@@ -1087,6 +1114,16 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(saved);
   }
 
+
+  /*** Build UI and initial load ***/
+  initThemeDots();
+  initSpeedButton();
+  initFontSelectors();
+  initFontSizeControls();
+  buildGroupGrid();
+  loadDashakam('001').catch(e => console.error('initial loadDashakam error', e));
+
+ 
   function initSpeedButton() {
     const audioEl = document.getElementById('audio');
     const speedBtnEl = document.getElementById('speedBtn');
