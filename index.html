@@ -109,13 +109,12 @@ h1{
 
 /* theme dots, fonts, size controls — preserve structure */
 .theme-dots{ display:flex; gap:8px; align-items:center; }
-.theme-dot{
-  width:26px; height:26px; border-radius:50%;
-  border:1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.5) inset;
-  cursor:pointer;
-  transform:translateZ(0);
-}
+.theme-dot[data-theme="pink"] { background-color: #ff2d55; }
+.theme-dot[data-theme="green"] { background-color: #32d74b; }
+.theme-dot[data-theme="orange"] { background-color: #ff9f0a; }
+.theme-dot[data-theme="blue"] { background-color: #0a84ff; }
+.theme-dot[data-theme="purple"] { background-color: #bf5af2; }
+.theme-dot:hover { transform: scale(1.08); filter: brightness(1.08); }
 .theme-dot:hover{ transform:scale(1.08); filter:brightness(1.08); }
 
 /* font swatches */
@@ -549,13 +548,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /*** Subtitle update (UI only) ***/
   function updateSubtitle(index) {
-    if (!cues || index < 0 || index >= cues.length) return;
-    currentCueIndex = index;
-    const parsed = parseCueText(cues[index].text);
-    verseDiv.innerHTML = nl2br(showTranslit ? parsed.verseTrans : parsed.verseDev);
-    splitWordsDiv.innerHTML = nl2br(showTranslit ? parsed.splitTrans : parsed.splitDev);
-    meaningDiv.innerHTML = nl2br(parsed.meaning || '');
-  }
+  if (!cues || index < 0 || index >= cues.length) return;
+  currentCueIndex = index;
+  const parsed = parseCueText(cues[index].text);
+  verseDiv.innerHTML = nl2br(showTranslit ? parsed.verseTrans : parsed.verseDev);
+  splitWordsDiv.innerHTML = nl2br(showTranslit ? parsed.splitTrans : parsed.splitDev);
+  meaningDiv.innerHTML = nl2br(parsed.meaning || '');
+}
+
 
   /*** Minimal group grid + highlight (to avoid undefined errors) ***/
   function buildGroupGrid() {
@@ -951,37 +951,49 @@ document.addEventListener('DOMContentLoaded', () => {
   function openGoto(open) { gotoOpen = open; if (gotoPanel) gotoPanel.style.display = open ? 'block' : 'none'; if (gotoToggle) gotoToggle.textContent = open ? 'Go to ▴' : 'Go to ▾'; }
   if (gotoToggle) { gotoToggle.addEventListener('click', () => openGoto(!gotoOpen)); }
 
-  /*** Transliteration toggle ***/
-  let translitState = 'english'; // initialize state
+  /*** Transliteration toggle (fixed) ***/
+let translitState = 'english'; // initial state
+let showTranslit = true;       // initialize properly for English
 
-  if (translitToggle) {
-    translitToggle.addEventListener('click', async () => {
-      // Cycle states: english → devanagari → malayalam → english
-      if (translitState === 'english') translitState = 'devanagari';
-      else if (translitState === 'devanagari') translitState = 'malayalam';
-      else translitState = 'english';
+// Function to determine folder and toggle
+async function loadTranslitCues(dashNum = null) {
+  dashNum = dashNum || String(currentDashakam).padStart(3, '0');
+  let vttFolder = 'vtt_transliterated';
+  if (translitState === 'english') vttFolder = 'vtt_transliterated';
+  else if (translitState === 'devanagari') vttFolder = 'vtt_fixed_output';
+  else if (translitState === 'malayalam') vttFolder = 'vtt_malayalam';
 
-      // Update button text
-      if (translitState === 'english') translitToggle.textContent = 'English Transliteration';
-      else if (translitState === 'devanagari') translitToggle.textContent = 'Devanagari';
-      else translitToggle.textContent = 'Malayalam';
+  cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
 
-      // Determine folder based on current state
-      let vttFolder = 'vtt_fixed_output'; // default for Devanagari
-      if (translitState === 'english') vttFolder = 'vtt_transliterated';
-      else if (translitState === 'devanagari') vttFolder = 'vtt_fixed_output';
-      else if (translitState === 'malayalam') vttFolder = 'vtt_malayalam';
+  // set showTranslit based on state
+  showTranslit = translitState === 'english' || translitState === 'malayalam';
 
-      // Reload cues
-      const dashNum = String(currentDashakam).padStart(3, '0');
-      cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
+  // update current verse
+  const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
+  if (cues.length > 0) updateSubtitle(idx);
+}
 
-      if (cues.length > 0) {
-        const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
-        updateSubtitle(idx);
-      }
-    });
-  }
+// Initial load
+loadTranslitCues();
+
+/*** Transliteration toggle button ***/
+if (translitToggle) {
+  translitToggle.addEventListener('click', async () => {
+    // Cycle states
+    if (translitState === 'english') translitState = 'devanagari';
+    else if (translitState === 'devanagari') translitState = 'malayalam';
+    else translitState = 'english';
+
+    // Update button text
+    if (translitState === 'english') translitToggle.textContent = 'English Transliteration';
+    else if (translitState === 'devanagari') translitToggle.textContent = 'Devanagari';
+    else translitToggle.textContent = 'Malayalam';
+
+    // Reload VTT cues for current Dashakam
+    await loadTranslitCues();
+  });
+}
+
 
   /*** Audio ended handling: auto-next dashakam ***/
   audio.addEventListener('ended', async () => {
@@ -1102,17 +1114,34 @@ const themes = {
     }
   }
 
-  function initThemeDots(defaultTheme = 'green') {
-    const themeDotsEl = document.getElementById('themeDots');
-    if (!themeDotsEl) return;
-    themeDotsEl.querySelectorAll('.theme-dot').forEach(btn => {
-      btn.addEventListener('click', () => {
-        applyTheme(btn.dataset.theme);
-      });
+function initThemeDots(defaultTheme = 'green') {
+  const themeDotsEl = document.getElementById('themeDots');
+  if (!themeDotsEl) return;
+
+  themeDotsEl.querySelectorAll('.theme-dot').forEach(btn => {
+    const themeName = btn.dataset.theme;
+    const themeVars = themes[themeName];
+
+    // Ensure every button gets a color
+    if(themeVars && themeVars.primary) {
+      btn.style.backgroundColor = themeVars.primary;
+      btn.style.border = '2px solid #fff'; // optional: better visibility
+    } else {
+      // fallback color for missing theme
+      btn.style.backgroundColor = '#555';
+    }
+
+    // Add click handler
+    btn.addEventListener('click', () => {
+      applyTheme(themeName);
     });
-    const saved = localStorage.getItem('theme') || defaultTheme;
-    applyTheme(saved);
-  }
+  });
+
+  // Apply saved or default theme
+  const saved = localStorage.getItem('theme') || defaultTheme;
+  applyTheme(saved);
+}
+
 
 
   /*** Build UI and initial load ***/
