@@ -1158,8 +1158,72 @@ function applyTheme(themeName) {
 }
 
 // Toggle Light / Dark mode
+function applyTheme(themeName) {
+  const vars = themes[themeName];
+  if (!vars) return;
+
+  const root = document.documentElement;
+
+  // Apply CSS variables
+  for (const [key, val] of Object.entries(vars)) {
+    root.style.setProperty(`--${key}`, val);
+  }
+
+  const accent = vars.primary;
+
+  // Accent for form controls
+  document.querySelectorAll('audio, input[type="range"]').forEach(el => {
+    el.style.accentColor = accent;
+  });
+
+  // Buttons and icons
+  document.querySelectorAll('button, button i, #audioControls i').forEach(el => {
+    el.style.color = vars.text;
+  });
+
+  // Main UI texts
+  const textElements = [
+    verseDiv, splitWordsDiv, meaningDiv,
+    timeDisplay, playPauseBtn, prevVerseBtn, nextVerseBtn,
+    prevDashakamBtn, nextDashakamBtn,
+    repeatVerseBtn, repeatDashakamBtn, speedBtn, muteBtn,
+    gotoToggle, ...document.querySelectorAll('.group-select')
+  ];
+
+  textElements.forEach(el => {
+    if (el) el.style.color = vars.text;
+  });
+
+  // Audio controls container (responds to light/dark)
+  const ac = document.getElementById('audioControls');
+  if (ac) {
+    const isLight = document.body.classList.contains('light-theme');
+    ac.style.borderColor = vars["primary-dark"];
+    ac.style.background = isLight
+      ? `linear-gradient(180deg, ${vars.bg} 0%, #f2f2f2 100%)`
+      : `linear-gradient(180deg, ${vars["primary-light"]} 0%, ${vars.bg} 100%)`;
+  }
+
+  // Save theme
+  localStorage.setItem('theme', themeName);
+
+  // Theme dots
+  const themeDots = document.getElementById('themeDots');
+  if (themeDots) {
+    themeDots.querySelectorAll('.theme-dot').forEach(dot => {
+      dot.classList.toggle('active', dot.dataset.theme === themeName);
+    });
+  }
+
+  // Force toggle label and button contrast
+  updateToggleColors();
+}
+
+
+// ✅ FIXED VERSION: immediately re-applies theme colors when switching mode
 function applyMode(mode) {
   const body = document.body;
+
   if (mode === 'light') {
     body.classList.add('light-theme');
     themeModeLabel.textContent = 'Light';
@@ -1170,46 +1234,58 @@ function applyMode(mode) {
     themeModeToggle.setAttribute('aria-pressed', 'false');
   }
 
+  // Save mode
   localStorage.setItem('nm_theme_mode', mode);
 
-  // Reapply current theme for new mode
+  // ✅ Immediately reapply current theme with correct background
   const themeName = localStorage.getItem('theme') || 'green';
-  applyTheme(themeName);
+  applyTheme(themeName); // <- ensures visual update right away
+
+  // Update all text and toggle colors for readability
+  const vars = themes[themeName];
+  if (vars) updateTextColors(vars.text, mode);
   updateToggleColors();
 }
 
-// High-contrast toggle button
+
+// Force Light/Dark toggle label and switch to have contrast
 function updateToggleColors() {
-  const label = document.getElementById('themeModeLabel');
-  const btn = document.getElementById('themeModeToggle');
-  if (!label || !btn) return;
+  const themeModeLabelEl = document.getElementById('themeModeLabel');
+  const themeModeToggleEl = document.getElementById('themeModeToggle');
+  if (!themeModeLabelEl || !themeModeToggleEl) return;
 
-  const isLight = document.body.classList.contains('light-theme');
-  const textColor = isLight ? '#000' : '#fff';
-  const bgColor = isLight ? '#f0f0f0' : '#222';
-  const borderColor = isLight ? '#ccc' : '#444';
+  const isLightMode = document.body.classList.contains('light-theme');
 
-  label.style.color = textColor;
-  btn.style.color = textColor;
-  btn.style.backgroundColor = bgColor;
-  btn.style.border = `1px solid ${borderColor}`;
+  const toggleTextColor = isLightMode ? '#000' : '#fff';
+  const toggleBgColor = isLightMode ? '#fff' : '#000';
+
+  themeModeLabelEl.style.color = toggleTextColor;
+  themeModeToggleEl.style.color = toggleTextColor;
+  themeModeToggleEl.style.backgroundColor = toggleBgColor;
 }
 
-// Helper: pick readable color based on background
-function getContrastColor(bgColor) {
-  const c = bgColor.substring(1); // strip #
-  const rgb = parseInt(c, 16);
-  const r = (rgb >> 16) & 0xff;
-  const g = (rgb >> 8) & 0xff;
-  const b = rgb & 0xff;
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 160 ? '#000' : '#fff';
-}
 
-// Optional: background + text updates
+// Update text colors across elements
 function updateTextColors(color, mode) {
   const bg = mode === 'light' ? '#fff' : '#000';
+  const textColor = color || (mode === 'light' ? '#000' : '#fff');
+
+  const textElements = [
+    verseDiv, splitWordsDiv, meaningDiv,
+    timeDisplay, playPauseBtn, prevVerseBtn, nextVerseBtn,
+    prevDashakamBtn, nextDashakamBtn,
+    repeatVerseBtn, repeatDashakamBtn, speedBtn, muteBtn,
+    gotoToggle,
+    ...document.querySelectorAll('.group-select')
+  ];
+
+  textElements.forEach(el => {
+    if (el) el.style.color = textColor;
+  });
+
   document.body.style.backgroundColor = bg;
+
+  // Ensure toggle stays readable
   updateToggleColors();
 }
 
