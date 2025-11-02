@@ -32,6 +32,7 @@
   --page-bg: linear-gradient(180deg,#08080a 0%, #0e0e10 100%);
   --glass-border: rgba(255,255,255,0.06);
   --control-bg: rgba(255,255,255,0.03);
+  --is-dark: 1; /* 1 = dark mode, 0 = light mode */
 }
 
 /* Light theme overrides (applied when body has .light-theme) */
@@ -1069,30 +1070,48 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
   });
 });
 
-  function applyTheme(themeName) {
-    const vars = themes[themeName];
-    if (!vars) return;
-    const root = document.documentElement;
-    for (const [key, val] of Object.entries(vars)) {
-      root.style.setProperty(`--${key}`, val);
-    }
-    const accent = vars.primary;
-    document.querySelectorAll('audio, button, input[type="range"]').forEach(el => {
-      el.style.accentColor = accent;
-    });
-    const ac = document.getElementById('audioControls');
-    if (ac) {
-      ac.style.borderColor = vars["primary-dark"];
-      ac.style.background = `linear-gradient(180deg, ${vars["primary-light"]} 0%, ${vars.bg} 100%)`;
-    }
-    localStorage.setItem('theme', themeName);
-    const themeDots = document.getElementById('themeDots');
-    if (themeDots) {
-      themeDots.querySelectorAll('.theme-dot').forEach(dot => {
-        dot.classList.toggle('active', dot.dataset.theme === themeName);
-      });
-    }
+ function applyTheme(themeName) {
+  const vars = themes[themeName];
+  if (!vars) return;
+
+  const root = document.documentElement;
+
+  // Apply CSS variables
+  for (const [key, val] of Object.entries(vars)) {
+    root.style.setProperty(`--${key}`, val);
   }
+
+  const accent = vars.primary;
+
+  // Accent for form controls
+  document.querySelectorAll('audio, input[type="range"]').forEach(el => {
+    el.style.accentColor = accent;
+  });
+
+  // Buttons and button icons (play/pause, prev/next, repeat)
+  document.querySelectorAll('button, button i, #audioControls i').forEach(el => {
+    el.style.color = vars.text; // <-- Use theme text color
+  });
+
+  // Audio controls container background & border
+  const ac = document.getElementById('audioControls');
+  if (ac) {
+    ac.style.borderColor = vars["primary-dark"];
+    ac.style.background = `linear-gradient(180deg, ${vars["primary-light"]} 0%, ${vars.bg} 100%)`;
+  }
+
+  // Save theme
+  localStorage.setItem('theme', themeName);
+
+  // Mark active dot
+  const themeDots = document.getElementById('themeDots');
+  if (themeDots) {
+    themeDots.querySelectorAll('.theme-dot').forEach(dot => {
+      dot.classList.toggle('active', dot.dataset.theme === themeName);
+    });
+  }
+}
+
 
 function initThemeDots(defaultTheme = 'green') {
   const themeDotsEl = document.getElementById('themeDots');
