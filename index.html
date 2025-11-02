@@ -305,16 +305,15 @@ audio{ display:block; margin:10px auto 0; width:100%; max-width:1100px; accent-c
     <div id="configRow">
       <div id="styleSelectorRow">
         <!-- Theme dots preserved -->
-        <div id="themeDots" class="theme-dots" aria-hidden="true">
-          <button class="theme-dot" data-theme="green" aria-label="Green theme"></button>
-          <button class="theme-dot" data-theme="blue" aria-label="Blue theme"></button>
-          <button class="theme-dot" data-theme="brown" aria-label="Brown theme"></button>
-          <button class="theme-dot" data-theme="purple" aria-label="Purple theme"></button>
-          <button class="theme-dot" data-theme="teal" aria-label="Teal theme"></button>
-          <button class="theme-dot" data-theme="charcoal" aria-label="Charcoal theme"></button>
-          <button class="theme-dot" data-theme="maroon" aria-label="Maroon theme"></button>
-          <button class="theme-dot" data-theme="custom" aria-label="Custom theme"></button>
-        </div>
+       <div id="themeDots" class="theme-dots" aria-hidden="true">
+  <button class="theme-dot" data-theme="dark" aria-label="Dark theme"></button>
+  <button class="theme-dot" data-theme="light" aria-label="Light theme"></button>
+  <button class="theme-dot" data-theme="pink" aria-label="Pink theme"></button>
+  <button class="theme-dot" data-theme="purple" aria-label="Purple theme"></button>
+  <button class="theme-dot" data-theme="blue" aria-label="Blue theme"></button>
+  <button class="theme-dot" data-theme="orange" aria-label="Orange theme"></button>
+</div>
+
 
         <div class="config-divider" aria-hidden="true" style="width:1px;height:26px;background:transparent;"></div>
 
@@ -959,7 +958,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
  // Only declare translitState once
 let translitState = 'english';
-showTranslit = true; // assign, do not redeclare elsewhere
+let showTranslit1 = true; // assign, do not redeclare elsewhere
 
 async function loadTranslitCues(dashNum = null) {
     dashNum = dashNum || String(currentDashakam).padStart(3, '0');
@@ -970,7 +969,7 @@ async function loadTranslitCues(dashNum = null) {
 
     cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
 
-    showTranslit = translitState === 'english' || translitState === 'malayalam';
+    showTranslit1 = translitState === 'english' || translitState === 'malayalam';
 
     const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
     if (cues.length > 0) updateSubtitle(idx);
@@ -1041,7 +1040,50 @@ if (translitToggle) {
      ============================ */
 
   /* THEME & FONT handling functions (kept) */
-
+const themes = {
+  dark: { 
+    primary: "#1c1c1e", 
+    "primary-dark": "#121212", 
+    "primary-light": "#2c2c2e", 
+    bg: "#000000", 
+    text: "#ffffff" 
+  },
+  light: { 
+    primary: "#f2f2f7", 
+    "primary-dark": "#d1d1d6", 
+    "primary-light": "#ffffff", 
+    bg: "#ffffff", 
+    text: "#1c1c1e" 
+  },
+  pink: { 
+    primary: "#ff375f", 
+    "primary-dark": "#bf0f3f", 
+    "primary-light": "#ff8fa0", 
+    bg: "#fff0f2", 
+    text: "#3c003c" 
+  },
+  purple: { 
+    primary: "#bf5af2", 
+    "primary-dark": "#7321bf", 
+    "primary-light": "#dab6f7", 
+    bg: "#f7f0ff", 
+    text: "#2c004c" 
+  },
+  blue: { 
+    primary: "#0a84ff", 
+    "primary-dark": "#0050cc", 
+    "primary-light": "#a6d1ff", 
+    bg: "#f0f8ff", 
+    text: "#003366" 
+  },
+  orange: { 
+    primary: "#ff9500", 
+    "primary-dark": "#cc7000", 
+    "primary-light": "#ffd49c", 
+    bg: "#fff6ed", 
+    text: "#663800" 
+  }
+};
 
 
   function applyTheme(themeName) {
