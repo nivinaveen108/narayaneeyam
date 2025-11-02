@@ -1108,37 +1108,25 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
     el.style.accentColor = accent;
   });
 
-  // Buttons and button icons (play/pause, prev/next, repeat)
+  // Buttons and icons
   document.querySelectorAll('button, button i, #audioControls i').forEach(el => {
-    el.style.color = vars.text; // Use theme text color
+    el.style.color = vars.text;
   });
 
-  // ------------------------------
-  // Update main text elements for readability
-  // ------------------------------
+  // Main UI texts
   const textElements = [
-    verseDiv,
-    splitWordsDiv,
-    meaningDiv,
-    timeDisplay,
-    playPauseBtn,
-    prevVerseBtn,
-    nextVerseBtn,
-    prevDashakamBtn,
-    nextDashakamBtn,
-    repeatVerseBtn,
-    repeatDashakamBtn,
-    speedBtn,
-    muteBtn,
-    gotoToggle,
-    ...document.querySelectorAll('.group-select')
+    verseDiv, splitWordsDiv, meaningDiv,
+    timeDisplay, playPauseBtn, prevVerseBtn, nextVerseBtn,
+    prevDashakamBtn, nextDashakamBtn,
+    repeatVerseBtn, repeatDashakamBtn, speedBtn, muteBtn,
+    gotoToggle, ...document.querySelectorAll('.group-select')
   ];
 
   textElements.forEach(el => {
     if (el) el.style.color = vars.text;
   });
 
-  // Audio controls container background & border
+  // Audio controls container
   const ac = document.getElementById('audioControls');
   if (ac) {
     ac.style.borderColor = vars["primary-dark"];
@@ -1148,14 +1136,85 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
   // Save theme
   localStorage.setItem('theme', themeName);
 
-  // Mark active dot
+  // Theme dots
   const themeDots = document.getElementById('themeDots');
   if (themeDots) {
     themeDots.querySelectorAll('.theme-dot').forEach(dot => {
       dot.classList.toggle('active', dot.dataset.theme === themeName);
     });
   }
+
+  // Force toggle label and button to always have high contrast
+  updateToggleColors();
 }
+
+function applyMode(mode) {
+  if (mode === 'light') {
+    document.body.classList.add('light-theme');
+    themeModeLabel.textContent = 'Light';
+    themeModeToggle.setAttribute('aria-pressed','true');
+  } else {
+    document.body.classList.remove('light-theme');
+    themeModeLabel.textContent = 'Dark';
+    themeModeToggle.setAttribute('aria-pressed','false');
+  }
+
+  localStorage.setItem('nm_theme_mode', mode);
+
+  // Update main text color after mode change
+  const themeName = localStorage.getItem('theme') || 'green';
+  const vars = themes[themeName];
+  if (vars) updateTextColors(vars.text, mode);
+
+  // Ensure toggle label/button remains readable
+  updateToggleColors();
+}
+
+// Always ensure the toggle label/button is readable
+function updateToggleColors() {
+  const themeModeLabelEl = document.getElementById('themeModeLabel');
+  const themeModeToggleEl = document.getElementById('themeModeToggle');
+  if (!themeModeLabelEl || !themeModeToggleEl) return;
+
+  // Decide color based on current mode
+  const isLightMode = document.body.classList.contains('light-theme');
+
+  // Force high contrast colors
+  const toggleTextColor = isLightMode ? '#000' : '#fff';
+  const toggleBgColor = isLightMode ? '#fff' : '#000'; // optional, for a better button background
+
+  themeModeLabelEl.style.color = toggleTextColor;
+  themeModeToggleEl.style.color = toggleTextColor;
+  themeModeToggleEl.style.backgroundColor = toggleBgColor; // ensures the text "Dark"/"Light" is visible
+}
+
+// Update main text elements
+function updateTextColors(color, mode) {
+  const bg = mode === 'light' ? '#fff' : '#000';
+  const textColor = color || (mode === 'light' ? '#000' : '#fff');
+
+  const textElements = [
+    verseDiv, splitWordsDiv, meaningDiv,
+    timeDisplay, playPauseBtn, prevVerseBtn, nextVerseBtn,
+    prevDashakamBtn, nextDashakamBtn,
+    repeatVerseBtn, repeatDashakamBtn, speedBtn, muteBtn,
+    gotoToggle,
+    ...document.querySelectorAll('.group-select')
+  ];
+
+  textElements.forEach(el => {
+    if (el) el.style.color = textColor;
+  });
+
+  document.body.style.backgroundColor = bg;
+
+  // Update toggle after changing mode/background
+  updateToggleColors();
+}
+
+
+
+
 
 
 
