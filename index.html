@@ -448,6 +448,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const groupGrid = document.getElementById('groupGrid');
   const themeDots = document.getElementById('themeDots');
   const translitToggle = document.getElementById('translitToggle');
+// ------------------------------
+//  Text elements that need dynamic color updates
+// ------------------------------
+const textElements = [
+  verseDiv,
+  splitWordsDiv,
+  meaningDiv,
+  timeDisplay,
+  playPauseBtn,
+  prevVerseBtn,
+  nextVerseBtn,
+  prevDashakamBtn,
+  nextDashakamBtn,
+  repeatVerseBtn,
+  repeatDashakamBtn,
+  speedBtn,
+  muteBtn,
+  gotoToggle,
+  ...document.querySelectorAll('.group-select')
+];
 
   /*** State ***/
   const totalDashakams = 100;
@@ -1090,7 +1110,32 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
 
   // Buttons and button icons (play/pause, prev/next, repeat)
   document.querySelectorAll('button, button i, #audioControls i').forEach(el => {
-    el.style.color = vars.text; // <-- Use theme text color
+    el.style.color = vars.text; // Use theme text color
+  });
+
+  // ------------------------------
+  // Update main text elements for readability
+  // ------------------------------
+  const textElements = [
+    verseDiv,
+    splitWordsDiv,
+    meaningDiv,
+    timeDisplay,
+    playPauseBtn,
+    prevVerseBtn,
+    nextVerseBtn,
+    prevDashakamBtn,
+    nextDashakamBtn,
+    repeatVerseBtn,
+    repeatDashakamBtn,
+    speedBtn,
+    muteBtn,
+    gotoToggle,
+    ...document.querySelectorAll('.group-select')
+  ];
+
+  textElements.forEach(el => {
+    if (el) el.style.color = vars.text;
   });
 
   // Audio controls container background & border
@@ -1111,6 +1156,7 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
     });
   }
 }
+
 
 
 function initThemeDots(defaultTheme = 'green') {
