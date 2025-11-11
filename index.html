@@ -1205,44 +1205,40 @@ plus10DashakamBtn.addEventListener('click', () => {
   });
 
 
-// Reference the slider
-const volumeSlider = document.getElementById('volumeSlider');
-
-// Initialize slider from saved volume or default
+// Reference audio, slider, and mute button
+// Initialize audio volume from saved value or default to 1
 audio.volume = parseFloat(localStorage.getItem('audioVolume')) || 1;
 if (volumeSlider) volumeSlider.value = audio.volume;
 
-// Update audio volume on slider input
-volumeSlider.addEventListener('input', (e) => {
-  const vol = parseFloat(e.target.value);
-  audio.volume = vol;
-  localStorage.setItem('audioVolume', vol);
+// Update audio volume when slider changes
+if (volumeSlider) {
+  volumeSlider.addEventListener('input', (e) => {
+    const vol = parseFloat(e.target.value);
+    audio.volume = vol;
+    localStorage.setItem('audioVolume', vol);
 
-  // Update mute button state
-  if (muteBtn) {
-    audio.muted = vol === 0;
-    muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-  }
-});
+    // Update mute state
+    if (muteBtn) {
+      audio.muted = vol === 0;
+      muteBtn.innerHTML = audio.muted
+        ? '<i class="fas fa-volume-mute"></i>'
+        : '<i class="fas fa-volume-up"></i>';
+    }
+  });
+}
 
-// Optional: when mute button is clicked, sync slider
-muteBtn.addEventListener('click', () => {
-  audio.muted = !audio.muted;
-  muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-  if (volumeSlider) volumeSlider.value = audio.muted ? 0 : audio.volume;
-});
-
-
-
-
-
-
+// Mute/unmute button click
+if (muteBtn) {
   muteBtn.addEventListener('click', () => {
     audio.muted = !audio.muted;
-    muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-  });
+    muteBtn.innerHTML = audio.muted
+      ? '<i class="fas fa-volume-mute"></i>'
+      : '<i class="fas fa-volume-up"></i>';
 
-  document.addEventListener('click', (e) => {
+    // Sync slider with mute state
+    if (volumeSlider) volumeSlider.value = audio.muted ? 0 : audio.volume;
+  });
+}  document.addEventListener('click', (e) => {
     const panel = document.getElementById('gotoPanel');
     const toggle = document.getElementById('gotoToggle');
     if (!panel || !toggle) return;
