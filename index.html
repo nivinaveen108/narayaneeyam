@@ -243,16 +243,16 @@ color: var(--text-primary);
 /* Light theme: bold pink, subtle dark outline for readability */
 body.light-theme #currentInfo {
   color: #ff2d55;        /* bright pink */
-  font-weight: 900;      /* extra-bold */
-  font-size: 1.05rem;    /* slightly smaller */
+  font-weight: 800;      /* extra-bold */
+  font-size: 1.0rem;    /* slightly smaller */
   text-shadow: 1px 1px 2px rgba(0,0,0,0.4); /* subtle shadow for contrast */
 }
 
 /* Dark theme: bold pink, subtle light outline for readability */
 body:not(.light-theme) #currentInfo {
   color: #ff2d55;        /* bright pink */
-  font-weight: 900;      /* extra-bold */
-  font-size: 1.05rem;    /* slightly smaller */
+  font-weight: 800;      /* extra-bold */
+  font-size: 1.0rem;    /* slightly smaller */
   text-shadow: 1px 1px 2px rgba(255,255,255,0.3); /* subtle highlight for dark bg */
 }
 
@@ -699,15 +699,6 @@ showSubtitleOverlay(true);
     infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3,'0')}${title ? " — " + title : ""} — Verse ${verseNum}`;
   }
 }
-
-
-// ---------------- Robust Mahāprāṇa highlighting ---------------- 
-
-// Devanagari range: 0900–097F
-const devanagariRegex = /[\u0900-\u097F]+/g;
-
-// Malayalam range: 0D00–0D7F
-const malayalamRegex = /[\u0D00-\u0D7F]+/g;
 
 // ---------------- Robust Mahāprāṇa highlighting ---------------- 
 
