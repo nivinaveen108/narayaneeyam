@@ -239,7 +239,18 @@ color: var(--text-primary);
 .group-select:hover{ background: var(--accent-soft); box-shadow: 0 8px 18px rgba(0,0,0,0.6) inset; }
 
 /* time info text (unchanged layout) */
-#timeDisplay, #currentInfo{ font-family:var(--ui-font); color:var(--text-secondary); font-weight:700; font-size:.92rem; }
+#timeDisplay, 
+body.light-theme #currentInfo {
+  color: #ff2d55; /* bright pink on light background */
+font-weight: 900; /* bold / extra-bold */
+  text-shadow: 0 2px 4px rgba(255,255,255,0.3);
+}
+
+body:not(.light-theme) #currentInfo {
+  color: #ff2d55; /* bright pink on dark background */
+font-weight: 900; /* bold / extra-bold */
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
 
 /* SUBTITLE CONTAINER - IMPORTANT: DO NOT CHANGE SIZE/STRUCTURE */
 /* exactly preserve max-width, margin, padding, border, border-radius, etc.  */
