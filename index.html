@@ -255,6 +255,43 @@ color: var(--text-primary);
   line-height: 1.9;
 }
 
+/* FAINT FOREGROUND IMAGE OVERLAY (does NOT alter existing container) */
+#subtitleContainer::after {
+  content: "";
+  position: absolute;
+  inset: 0;                   /* fill the container exactly */
+  background: url('Guruvayoorappan.png') center center no-repeat;
+  background-size: contain;    /* adjust to taste: 'contain' or 'cover' */
+  opacity: 0;                  /* initially hidden */
+  mix-blend-mode: var(--subtitle-overlay-blend, lighten);
+  pointer-events: none;        /* allow clicks/text selection */
+  transition: opacity 1.2s ease; /* smooth fade */
+  z-index: 5;
+}
+
+/* show overlay */
+#subtitleContainer.show-overlay::after {
+  opacity: var(--subtitle-overlay-opacity, 0.08);
+}
+
+/* theme adjustments */
+[data-theme="light"] {
+  --subtitle-overlay-blend: multiply;
+  --subtitle-overlay-opacity: 0.08;
+}
+
+[data-theme="dark"] {
+  --subtitle-overlay-blend: screen;
+  --subtitle-overlay-opacity: 0.12;
+}
+
+/* ensure text stays above overlay */
+#subtitleContainer > * {
+  position: relative;
+  z-index: 10;
+}
+
+
 /* Inside content... keep fonts & sizes exactly as before */
 #verse, #splitWords{ font-family: var(--deva-font); letter-spacing:.02em; text-align:center; }
 #verse{
@@ -607,7 +644,16 @@ function updateCurrentInfo() {
       return [];
     }
   }
+function showSubtitleOverlay(show = true) {
+  const container = document.getElementById('subtitleContainer');
+  if (!container) return;
 
+  if (show) {
+    container.classList.add('show-overlay');
+  } else {
+    container.classList.remove('show-overlay');
+  }
+}
 /*** Subtitle update (UI only) ***/
 function updateSubtitle(index) {
   if (!cues || index < 0 || index >= cues.length) return;
@@ -622,11 +668,28 @@ function updateSubtitle(index) {
   let verseText = highlightMahapraana(showTranslit ? parsed.verseTrans : parsed.verseDev, script);
   let splitText = highlightMahapraana(showTranslit ? parsed.splitTrans : parsed.splitDev, script);
 
-  // Render
+  // Render text
   verseDiv.innerHTML = nl2br(verseText);
   splitWordsDiv.innerHTML = nl2br(splitText);
   meaningDiv.innerHTML = nl2br(parsed.meaning || '');
+
+  // -----------------------
+  // NEW: update Dashakam info with title
+  // -----------------------
+  const infoEl = document.getElementById("currentInfo");
+  if (infoEl) {
+    const verseNum = currentCueIndex + 1;
+    // safely get the Dashakam title
+    let title = "";
+    if (dashakamTitles && dashakamTitles.length) {
+      const dashakamEntry = dashakamTitles.find(d => d.number === currentDashakam);
+      if (dashakamEntry) title = dashakamEntry.english_title || "";
+    }
+
+    infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3,'0')}${title ? " — " + title : ""} — Verse ${verseNum}`;
+  }
 }
+
 
 // ---------------- Robust Mahāprāṇa highlighting ---------------- 
 
