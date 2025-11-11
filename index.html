@@ -240,17 +240,23 @@ color: var(--text-primary);
 
 /* time info text (unchanged layout) */
 #timeDisplay, 
+/* Light theme: bold pink, subtle dark outline for readability */
 body.light-theme #currentInfo {
-  color: #ff2d55; /* bright pink on light background */
-font-weight: 900; /* bold / extra-bold */
-  text-shadow: 0 2px 4px rgba(255,255,255,0.3);
+  color: #ff2d55;        /* bright pink */
+  font-weight: 900;      /* extra-bold */
+  font-size: 1.05rem;    /* slightly smaller */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4); /* subtle shadow for contrast */
 }
 
+/* Dark theme: bold pink, subtle light outline for readability */
 body:not(.light-theme) #currentInfo {
-  color: #ff2d55; /* bright pink on dark background */
-font-weight: 900; /* bold / extra-bold */
-  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  color: #ff2d55;        /* bright pink */
+  font-weight: 900;      /* extra-bold */
+  font-size: 1.05rem;    /* slightly smaller */
+  text-shadow: 1px 1px 2px rgba(255,255,255,0.3); /* subtle highlight for dark bg */
 }
+
+
 
 /* SUBTITLE CONTAINER - IMPORTANT: DO NOT CHANGE SIZE/STRUCTURE */
 /* exactly preserve max-width, margin, padding, border, border-radius, etc.  */
@@ -323,7 +329,17 @@ audio{ display:block; margin:10px auto 0; width:100%; max-width:1100px; accent-c
   color:var(--text-primary);
   display:flex; align-items:center; gap:8px;
 }
+/* Button text color in light theme */
+body.light-theme button {
+  color: #000; /* pure black text */
+  border-color: rgba(0,0,0,0.1); /* optional: subtle border for visibility */
+}
 
+/* Optional: hover effect in light mode */
+body.light-theme button:hover {
+  background: rgba(0,0,0,0.04);
+  box-shadow: inset 0 6px 18px rgba(0,0,0,0.1);
+}
 /* tiny pill indicator for accent */
 .accent-pill{
   width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 6px 14px rgba(255,45,85,0.22);
@@ -693,45 +709,53 @@ const devanagariRegex = /[\u0900-\u097F]+/g;
 // Malayalam range: 0D00–0D7F
 const malayalamRegex = /[\u0D00-\u0D7F]+/g;
 
+// ---------------- Robust Mahāprāṇa highlighting ---------------- 
+
+// Devanagari range: 0900–097F
+const devanagariRegex = /[\u0900-\u097F]+/g;
+
+// Malayalam range: 0D00–0D7F
+const malayalamRegex = /[\u0D00-\u0D7F]+/g;
+
 function highlightMahapraana(text, script = 'devanagari') {
   if (!text) return '';
-  // Normalize to avoid weird mobile glyph issues
   text = String(text).normalize('NFC');
 
+  // helper to sort patterns longest-first to avoid partial match issues
+  const sortByLengthDesc = arr => arr.sort((a,b) => b.length - a.length);
+
   if (script === 'devanagari') {
-    const devanagariPatterns = [
+    const devanagariPatterns = sortByLengthDesc([
       // basic aspirates
       'ख','घ','छ','झ','ठ','ढ','थ','ध','फ','भ',
-      // frequent aspirated clusters / conjuncts you asked to include
-      'स्थ','स्थि','स्फ','स्फु','द्भ','द्घ','द्ध','ण्ठ','च्छ','च्छा','ря', // keep 'ря' if needed remove otherwise
+      // frequent aspirated clusters / conjuncts
+      'स्थ','स्थि','स्फ','स्फु','द्भ','द्घ','द्ध','ण्ठ','च्छ','च्छा',
       'र्भ','ब्ध','ब्धे','र्थ','ग्ध','न्ध','र्थ्य','र्था'
-    ];
+    ]);
     const re = new RegExp(devanagariPatterns.join('|'), 'g');
     return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   if (script === 'malayalam') {
-    // Use ഛ (U+0D1B) for aspirated 'ch' and include common variants.
-    // Note: Malayalam orthography often uses virama/conjuncts; we include common forms.
-    const malPatterns = [
-      // basic aspirates (one-to-one)
+    const malPatterns = sortByLengthDesc([
+      // basic aspirates
       'ഖ','ഘ','ഛ','ഝ','ഠ','ഢ','ഥ','ധ','ഫ','ഭ',
-      // variants / clusters (use ്-less conjunct-like sequences where common)
+      // variants / clusters
       'സ്ഥ','സ്ഥി','സ്ഫ','സ്ഫു','ദ്ഭ','ദ്ഘ','ദ്ധ','ണ്ഠ',
-      // Ensure the aspirated CH uses ഛ forms instead of 'ച്ച'
+      // aspirated CH forms
       'ഛാ','ഛ്','സ്വഛ','ഛ്ച','ഛ്ത',
       'ർഭ','ബ്ധ','ബ്ധെ','ർഥ','ഗ്ധ','ന്ധ','ര്‍ത്ഥ്യ','ര്‍ത്ഥാ'
-    ];
+    ]);
     const re = new RegExp(malPatterns.join('|'), 'g');
     return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   if (script === 'english') {
-    const engPatterns = [
+    const engPatterns = sortByLengthDesc([
       'kh','gh','chh','jh','ṭh','ḍh','th','dh','ph','bh',
       'stha','sthi','sph','sphu','dbh','ddh','ṇṭh',
       'cch','cchā','svacch','rbh','bdh','bdhe','rth','gdh','ndh','rthya','rthā'
-    ];
+    ]);
     const re = new RegExp(engPatterns.join('|'), 'gi');
     return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
