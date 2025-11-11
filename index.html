@@ -350,6 +350,13 @@ audio{ display:block; margin:10px auto 0; width:100%; max-width:1100px; accent-c
 
       <!-- Main controls row -->
       <div class="control-row">
+
+  <!-- -10 Dashakam -->
+  <button id="minus10DashakamBtn" class="btn-with-label" aria-label="<< -10">
+    <i class="fas fa-backward"></i>
+    <span class="btn-label-small">−10</span>
+  </button>
+
         <button id="prevDashakamBtn" class="btn-with-label" aria-label="Previous Dashakam">
           <i class="fas fa-step-backward"></i>
           <span class="btn-label-small">Dashakam</span>
@@ -389,6 +396,13 @@ audio{ display:block; margin:10px auto 0; width:100%; max-width:1100px; accent-c
           <span class="btn-label-small">Dashakam</span>
           <i class="fas fa-step-forward"></i>
         </button>
+
+  <!-- +10 Dashakam -->
+  <button id="plus10DashakamBtn" class="btn-with-label" aria-label=" +10 >>">
+    <span class="btn-label-small">+10</span>
+    <i class="fas fa-forward"></i>
+  </button>
+
       </div>
 
       <!-- Time + transliteration toggle + Go to -->
@@ -431,6 +445,8 @@ document.addEventListener('DOMContentLoaded', () => {
   /*** DOM references ***/
   const audio = document.getElementById('audio');
   const playPauseBtn = document.getElementById('playPauseBtn');
+  const minus10DashakamBtn = document.getElementById('minus10DashakamBtn');
+  const plus10DashakamBtn  = document.getElementById('plus10DashakamBtn');
   const prevDashakamBtn = document.getElementById('prevDashakamBtn');
   const nextDashakamBtn = document.getElementById('nextDashakamBtn');
   const prevVerseBtn = document.getElementById('prevVerseBtn');
@@ -888,6 +904,21 @@ const textElements = [
   nextDashakamBtn.addEventListener('click', () => {
     if (currentDashakam < totalDashakams) loadDashakam(String(currentDashakam + 1).padStart(3, '0'));
   });
+
+/*** ±10 Dashakam UI buttons ***/
+minus10DashakamBtn.addEventListener('click', () => {
+  if (currentDashakam > 1) {
+    const target = Math.max(1, currentDashakam - 10);
+    loadDashakam(String(target).padStart(3, '0'));
+  }
+});
+
+plus10DashakamBtn.addEventListener('click', () => {
+  if (currentDashakam < totalDashakams) {
+    const target = Math.min(totalDashakams, currentDashakam + 10);
+    loadDashakam(String(target).padStart(3, '0'));
+  }
+});
 
   /*** Repeat toggles (mutually exclusive, with save + visual feedback) ***/
   repeatVerseBtn.addEventListener('click', () => {
