@@ -109,17 +109,21 @@ h1{
 #speedBtn { min-width:70px; justify-content:space-evenly; }
 
 /* theme dots, fonts, size controls — preserve structure */
-.theme-dots{ display:flex; gap:8px; align-items:center; }
-.theme-dot[data-theme="pink"] { background-color: #ff2d55; }
-.theme-dot[data-theme="green"] { background-color: #32d74b; }
+.theme-dots { display:flex; gap:8px; align-items:center; }
+
+.theme-dot[data-theme="dark"]   { background-color: #1c1c1e; border: 1px solid #555; }
+.theme-dot[data-theme="light"]  { background-color: #f2f2f7; border: 1px solid #c7c7cb; }
+.theme-dot[data-theme="pink"]   { background-color: #ff2d55; }
+.theme-dot[data-theme="green"]  { background-color: #32d74b; }
 .theme-dot[data-theme="orange"] { background-color: #ff9f0a; }
-.theme-dot[data-theme="blue"] { background-color: #0a84ff; }
+.theme-dot[data-theme="blue"]   { background-color: #0a84ff; }
 .theme-dot[data-theme="purple"] { background-color: #bf5af2; }
-.theme-dot[data-theme="brown"]   { background-color: #a0522d; } /* Sienna */
-.theme-dot[data-theme="teal"]    { background-color: #008080; }
+.theme-dot[data-theme="brown"]  { background-color: #a0522d; } /* Sienna */
+.theme-dot[data-theme="teal"]   { background-color: #008080; }
 .theme-dot[data-theme="charcoal"]{ background-color: #333333; }
-.theme-dot[data-theme="maroon"]  { background-color: #800000; }
-.theme-dot[data-theme="custom"]  { background-color: #ffcc00; } /* or any custom color */
+.theme-dot[data-theme="maroon"] { background-color: #800000; }
+.theme-dot[data-theme="custom"] { background-color: #ffcc00; } /* or any custom color */
+
 
 .theme-dot:hover { transform: scale(1.08); filter: brightness(1.08); }
 .theme-dot:hover{ transform:scale(1.08); filter:brightness(1.08); }
@@ -168,6 +172,12 @@ h1{
   padding-top:10px;
 }
 .time-left, .time-right{ display:flex; align-items:center; gap:8px; }
+
+.mahapraana {
+  font-weight: bold; /* optional */
+  color: var(--mahapraana-color); /* use JS-set variable */
+}
+
 
 /* Buttons - preserve sizes but restyle visuals */
 button{
@@ -588,14 +598,78 @@ const textElements = [
     }
   }
 
-  /*** Subtitle update (UI only) ***/
-  function updateSubtitle(index) {
+/*** Subtitle update (UI only) ***/
+function updateSubtitle(index) {
   if (!cues || index < 0 || index >= cues.length) return;
   currentCueIndex = index;
+
   const parsed = parseCueText(cues[index].text);
-  verseDiv.innerHTML = nl2br(showTranslit ? parsed.verseTrans : parsed.verseDev);
-  splitWordsDiv.innerHTML = nl2br(showTranslit ? parsed.splitTrans : parsed.splitDev);
+
+  // Determine active script
+  const script = showTranslit ? translitState || 'english' : 'devanagari';
+
+  // Highlight mahāprāṇas
+  let verseText = highlightMahapraana(showTranslit ? parsed.verseTrans : parsed.verseDev, script);
+  let splitText = highlightMahapraana(showTranslit ? parsed.splitTrans : parsed.splitDev, script);
+
+  // Render
+  verseDiv.innerHTML = nl2br(verseText);
+  splitWordsDiv.innerHTML = nl2br(splitText);
   meaningDiv.innerHTML = nl2br(parsed.meaning || '');
+}
+
+Use this logic - // ---------------- Robust Mahāprāṇa highlighting ---------------- 
+
+// Devanagari range: 0900–097F
+const devanagariRegex = /[\u0900-\u097F]+/g;
+
+// Malayalam range: 0D00–0D7F
+const malayalamRegex = /[\u0D00-\u0D7F]+/g;
+
+function highlightMahapraana(text, script = 'devanagari') {
+  if (!text) return '';
+  // Normalize to avoid weird mobile glyph issues
+  text = String(text).normalize('NFC');
+
+  if (script === 'devanagari') {
+    const devanagariPatterns = [
+      // basic aspirates
+      'ख','घ','छ','झ','ठ','ढ','थ','ध','फ','भ',
+      // frequent aspirated clusters / conjuncts you asked to include
+      'स्थ','स्थि','स्फ','स्फु','द्भ','द्घ','द्ध','ण्ठ','च्छ','च्छा','ря', // keep 'ря' if needed remove otherwise
+      'र्भ','ब्ध','ब्धे','र्थ','ग्ध','न्ध','र्थ्य','र्था'
+    ];
+    const re = new RegExp(devanagariPatterns.join('|'), 'g');
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
+  }
+
+  if (script === 'malayalam') {
+    // Use ഛ (U+0D1B) for aspirated 'ch' and include common variants.
+    // Note: Malayalam orthography often uses virama/conjuncts; we include common forms.
+    const malPatterns = [
+      // basic aspirates (one-to-one)
+      'ഖ','ഘ','ഛ','ഝ','ഠ','ഢ','ഥ','ധ','ഫ','ഭ',
+      // variants / clusters (use ്-less conjunct-like sequences where common)
+      'സ്ഥ','സ്ഥി','സ്ഫ','സ്ഫു','ദ്ഭ','ദ്ഘ','ദ്ധ','ണ്ഠ',
+      // Ensure the aspirated CH uses ഛ forms instead of 'ച്ച'
+      'ഛാ','ഛ്','സ്വഛ','ഛ്ച','ഛ്ത',
+      'ർഭ','ബ്ധ','ബ്ധെ','ർഥ','ഗ്ധ','ന്ധ','ര്‍ത്ഥ്യ','ര്‍ത്ഥാ'
+    ];
+    const re = new RegExp(malPatterns.join('|'), 'g');
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
+  }
+
+  if (script === 'english') {
+    const engPatterns = [
+      'kh','gh','chh','jh','ṭh','ḍh','th','dh','ph','bh',
+      'stha','sthi','sph','sphu','dbh','ddh','ṇṭh',
+      'cch','cchā','svacch','rbh','bdh','bdhe','rth','gdh','ndh','rthya','rthā'
+    ];
+    const re = new RegExp(engPatterns.join('|'), 'gi');
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
+  }
+
+  return text;
 }
 
 
@@ -1091,15 +1165,58 @@ if (translitToggle) {
      Tiny helpers (these are exactly the same you had)
      ============================ */
 
-  /* THEME & FONT handling functions (kept) */
 const themes = {
-  dark: { primary: "#1c1c1e", "primary-dark": "#121212", "primary-light": "#2c2c2e", bg: "#000000", text: "#ffffff" },
-  light: { primary: "#f2f2f7", "primary-dark": "#d1d1d6", "primary-light": "#ffffff", bg: "#ffffff", text: "#1c1c1e" },
-  pink: { primary: "#ff375f", "primary-dark": "#bf0f3f", "primary-light": "#ff8fa0", bg: "#fff0f2", text: "#3c003c" },
-  purple: { primary: "#bf5af2", "primary-dark": "#7321bf", "primary-light": "#dab6f7", bg: "#f7f0ff", text: "#2c004c" },
-  blue: { primary: "#0a84ff", "primary-dark": "#0050cc", "primary-light": "#a6d1ff", bg: "#f0f8ff", text: "#003366" },
-  orange: { primary: "#ff9500", "primary-dark": "#cc7000", "primary-light": "#ffd49c", bg: "#fff6ed", text: "#663800" }
+  dark: {
+    primary: "#1c1c1e",
+    "primary-dark": "#121212",
+    "primary-light": "#2c2c2e",
+    bg: "#000000",
+    text: "#ffffff",
+    highlight: "#ff4d4d" // Mahāprāṇa highlight in dark
+  },
+  light: {
+    primary: "#f2f2f7",
+    "primary-dark": "#d1d1d6",
+    "primary-light": "#ffffff",
+    bg: "#ffffff",
+    text: "#1c1c1e",
+    highlight: "#d12a2a" // Mahāprāṇa highlight in light
+  },
+  pink: {
+    primary: "#ff375f",
+    "primary-dark": "#bf0f3f",
+    "primary-light": "#ff8fa0",
+    bg: "#fff0f2",
+    text: "#3c003c",
+    highlight: "#e6004c"
+  },
+  purple: {
+    primary: "#bf5af2",
+    "primary-dark": "#7321bf",
+    "primary-light": "#dab6f7",
+    bg: "#f7f0ff",
+    text: "#2c004c",
+    highlight: "#8000ff"
+  },
+  blue: {
+    primary: "#0a84ff",
+    "primary-dark": "#0050cc",
+    "primary-light": "#a6d1ff",
+    bg: "#f0f8ff",
+    text: "#003366",
+    highlight: "#0066cc"
+  },
+  orange: {
+    primary: "#ff9500",
+    "primary-dark": "#cc7000",
+    "primary-light": "#ffd49c",
+    bg: "#fff6ed",
+    text: "#663800",
+    highlight: "#ff5500"
+  }
 };
+
+
 
 document.querySelectorAll(".theme-dot").forEach(dot => {
   dot.addEventListener("click", () => {
@@ -1130,6 +1247,14 @@ function applyTheme(themeName) {
   // Apply CSS variables
   for (const [key, val] of Object.entries(vars)) {
     root.style.setProperty(`--${key}`, val);
+  }
+
+  // Mahāprāṇa highlight adapts dynamically from theme
+  if (vars.highlight) {
+    root.style.setProperty('--mahapraana-color', vars.highlight);
+  } else {
+    // fallback if highlight not defined
+    root.style.setProperty('--mahapraana-color', vars.primary);
   }
 
   const accent = vars.primary;
