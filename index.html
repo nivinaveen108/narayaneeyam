@@ -254,42 +254,23 @@ color: var(--text-primary);
   text-align: center;
   line-height: 1.9;
 }
-
-/* FAINT FOREGROUND IMAGE OVERLAY (does NOT alter existing container) */
-#subtitleContainer::after {
-  content: "";
+#overlayImage {
   position: absolute;
-  inset: 0;                   /* fill the container exactly */
-  background: url('Guruvayoorappan.png') center center no-repeat;
-  background-size: contain;    /* adjust to taste: 'contain' or 'cover' */
-  opacity: 0;                  /* initially hidden */
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url('images/krishna-symbol.png') center center no-repeat;
+  background-size: contain;  /* or cover */
+  opacity: 0;
   mix-blend-mode: var(--subtitle-overlay-blend, lighten);
-  pointer-events: none;        /* allow clicks/text selection */
-  transition: opacity 1.2s ease; /* smooth fade */
-  z-index: 5;
+  pointer-events: none;       /* allows clicking/selecting text */
+  transition: opacity 1.2s ease;
+  z-index: 15;                /* ABOVE text */
 }
 
-/* show overlay */
-#subtitleContainer.show-overlay::after {
+/* visible state */
+#subtitleContainer.show-overlay #overlayImage {
   opacity: var(--subtitle-overlay-opacity, 0.08);
 }
 
-/* theme adjustments */
-[data-theme="light"] {
-  --subtitle-overlay-blend: multiply;
-  --subtitle-overlay-opacity: 0.08;
-}
-
-[data-theme="dark"] {
-  --subtitle-overlay-blend: screen;
-  --subtitle-overlay-opacity: 0.12;
-}
-
-/* ensure text stays above overlay */
-#subtitleContainer > * {
-  position: relative;
-  z-index: 10;
-}
 
 
 /* Inside content... keep fonts & sizes exactly as before */
@@ -480,7 +461,8 @@ audio{ display:block; margin:10px auto 0; width:100%; max-width:1100px; accent-c
     <audio id="audio" preload="auto"></audio>
 
     <!-- subtitles (IMPORTANT: container's sizing & padding kept EXACTLY as original) -->
-    <div id="subtitleContainer">
+<div id="subtitleContainer">
+  <div id="overlayImage"></div> <!-- NEW foreground overlay -->
       <div id="verse"></div>
       <div id="splitWords"></div>
       <div id="meaning"></div>
