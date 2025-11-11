@@ -192,6 +192,10 @@ button{
   box-shadow: 0 6px 16px rgba(0,0,0,0.5) inset;
 }
 
+button span, .btn-label-small {
+  color: var(--text-primary);
+}
+
 /* icon buttons */
 button.icon-btn{ width:54px; height:44px; padding:0; display:flex; align-items:center; justify-content:center; font-size:1.05rem; }
 
@@ -230,6 +234,7 @@ button:focus-visible{
   border-radius:8px; padding:8px 12px; font-weight:700; min-width:120px; text-align:center;
   cursor:pointer; border:1px solid rgba(255,255,255,0.03);
   background:transparent;
+color: var(--text-primary);
 }
 .group-select:hover{ background: var(--accent-soft); box-shadow: 0 8px 18px rgba(0,0,0,0.6) inset; }
 
@@ -1244,45 +1249,44 @@ function applyTheme(themeName) {
 
   const root = document.documentElement;
 
-  // Apply CSS variables
+  // ---------------- 1️⃣ Apply CSS variables ----------------
   for (const [key, val] of Object.entries(vars)) {
     root.style.setProperty(`--${key}`, val);
   }
 
   // Mahāprāṇa highlight adapts dynamically from theme
-  if (vars.highlight) {
-    root.style.setProperty('--mahapraana-color', vars.highlight);
-  } else {
-    // fallback if highlight not defined
-    root.style.setProperty('--mahapraana-color', vars.primary);
-  }
+  root.style.setProperty('--mahapraana-color', vars.highlight || vars.primary);
 
   const accent = vars.primary;
 
-  // Accent for form controls
+  // ---------------- 2️⃣ Accent for form controls ----------------
   document.querySelectorAll('audio, input[type="range"]').forEach(el => {
     el.style.accentColor = accent;
   });
 
-  // Buttons and icons
-  document.querySelectorAll('button, button i, #audioControls i').forEach(el => {
+  // ---------------- 3️⃣ Buttons, icons, labels ----------------
+  document.querySelectorAll('button, button i, #audioControls i, .btn-label-small').forEach(el => {
     el.style.color = vars.text;
   });
 
-  // Main UI texts
+  // Main UI text elements
   const textElements = [
     verseDiv, splitWordsDiv, meaningDiv,
     timeDisplay, playPauseBtn, prevVerseBtn, nextVerseBtn,
     prevDashakamBtn, nextDashakamBtn,
     repeatVerseBtn, repeatDashakamBtn, speedBtn, muteBtn,
-    gotoToggle, ...document.querySelectorAll('.group-select')
+    gotoToggle, ...document.querySelectorAll('.group-select'),
+    ...document.querySelectorAll('.accent-pill')
   ];
 
   textElements.forEach(el => {
     if (el) el.style.color = vars.text;
   });
 
-  // Audio controls container
+  // Split words and accent-colored text
+  if (splitWordsDiv) splitWordsDiv.style.color = accent;
+
+  // ---------------- 4️⃣ Audio controls container ----------------
   const ac = document.getElementById('audioControls');
   if (ac) {
     const isLight = document.body.classList.contains('light-theme');
@@ -1292,10 +1296,10 @@ function applyTheme(themeName) {
       : `linear-gradient(180deg, ${vars["primary-light"]} 0%, ${vars.bg} 100%)`;
   }
 
-  // Save theme
+  // ---------------- 5️⃣ Save theme ----------------
   localStorage.setItem('theme', themeName);
 
-  // Theme dots
+  // ---------------- 6️⃣ Update theme dots ----------------
   const themeDots = document.getElementById('themeDots');
   if (themeDots) {
     themeDots.querySelectorAll('.theme-dot').forEach(dot => {
@@ -1303,7 +1307,7 @@ function applyTheme(themeName) {
     });
   }
 
-  // Fix text/toggle contrast
+  // ---------------- 7️⃣ Fix text/toggle contrast ----------------
   const mode = document.body.classList.contains('light-theme') ? 'light' : 'dark';
   adjustTextContrastForTheme(vars, mode);
   updateToggleColors();
