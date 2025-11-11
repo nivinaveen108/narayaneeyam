@@ -289,6 +289,53 @@ body:not(.light-theme) #currentInfo {
   opacity: var(--subtitle-overlay-opacity, 0.25);
 }
 
+/* Wrapper for mute + slider */
+.volume-control {
+  position: relative;
+  display: inline-block;
+}
+
+/* Volume slider hidden by default, appears on hover */
+.volume-slider {
+  position: absolute;
+  bottom: 100%; /* slider appears above button */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  display: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  outline: none;
+}
+
+/* Slider thumb */
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* Show slider on hover over button */
+.volume-control:hover .volume-slider {
+  display: block;
+}
+
 
 
 /* Inside content... keep fonts & sizes exactly as before */
@@ -432,9 +479,21 @@ body.light-theme button:hover {
           <i class="fas fa-play"></i>
         </button>
 
-        <button id="muteBtn" class="icon-btn" title="Mute" aria-label="Mute or Unmute">
-          <i class="fas fa-volume-up"></i>
-        </button>
+<div id="volumeControl" class="volume-control">
+  <button id="muteBtn" class="icon-btn" title="Mute" aria-label="Mute or Unmute">
+    <i class="fas fa-volume-up"></i>
+  </button>
+  <input 
+    type="range" 
+    id="volumeSlider" 
+    min="0" 
+    max="100" 
+    value="100" 
+    class="volume-slider"
+    title="Volume"
+  >
+</div>
+
 
         <button id="speedBtn" class="icon-btn" title="Change Speed" aria-label="Change Playback Speed">
           <i class="fas fa-tachometer-alt"></i>
@@ -1144,6 +1203,39 @@ plus10DashakamBtn.addEventListener('click', () => {
     clearTimeout(speedTimeout);
     speedTimeout = setTimeout(() => { speedBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i>'; }, 900);
   });
+
+
+// Reference the slider
+const volumeSlider = document.getElementById('volumeSlider');
+
+// Initialize slider from saved volume or default
+audio.volume = parseFloat(localStorage.getItem('audioVolume')) || 1;
+if (volumeSlider) volumeSlider.value = audio.volume;
+
+// Update audio volume on slider input
+volumeSlider.addEventListener('input', (e) => {
+  const vol = parseFloat(e.target.value);
+  audio.volume = vol;
+  localStorage.setItem('audioVolume', vol);
+
+  // Update mute button state
+  if (muteBtn) {
+    audio.muted = vol === 0;
+    muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+  }
+});
+
+// Optional: when mute button is clicked, sync slider
+muteBtn.addEventListener('click', () => {
+  audio.muted = !audio.muted;
+  muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+  if (volumeSlider) volumeSlider.value = audio.muted ? 0 : audio.volume;
+});
+
+
+
+
+
 
   muteBtn.addEventListener('click', () => {
     audio.muted = !audio.muted;
