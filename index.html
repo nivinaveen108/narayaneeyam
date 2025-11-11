@@ -510,7 +510,7 @@ const textElements = [
   let speedOptions = [1, 1.25, 1.5, 2];
   let speedIndex = 0;
   let speedTimeout = null;
-
+  let dashakamTitles = [];  // will hold all titles from JSON
   // seek state flags
   let isSeeking = false;
   let lastSeekTarget = 0;
@@ -537,12 +537,17 @@ const textElements = [
   }
 
   // display current Dashakam/verse (if a UI element exists)
-  function updateCurrentInfo() {
-    const infoEl = document.getElementById("currentInfo");
-    if (!infoEl) return;
-    const verseNum = (currentCueIndex === -1) ? '-' : (currentCueIndex + 1);
-    infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3,'0')} — Verse ${verseNum}`;
-  }
+function updateCurrentInfo() {
+  const infoEl = document.getElementById("currentInfo");
+  if (!infoEl) return;
+
+  const verseNum = (currentCueIndex === -1) ? '-' : (currentCueIndex + 1);
+  const title = getDashakamTitle(currentDashakam);
+
+  // Show with title included
+  // Example: Dashakam 001 – Form and Glory of the Lord — Verse 3
+  infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3, '0')} — ${title} — Verse ${verseNum}`;
+}
 
   /*** Cue parsing ***/
   function parseCueText(text) {
@@ -719,6 +724,24 @@ function highlightMahapraana(text, script = 'devanagari') {
     const sel = groupGrid.querySelector(`.group-select[data-val="${String(currentDashakam).padStart(3,'0')}"]`);
     if (sel) sel.style.background = getComputedStyle(document.documentElement).getPropertyValue('--accent-soft') || '#a4d4a6';
   }
+
+// 1️⃣ Load the titles JSON once at startup
+async function loadDashakamTitles() {
+  try {
+    const res = await fetch("narayaneeyam_dashakam_titles.json");
+    dashakamTitles = await res.json();
+    console.log("Loaded Dashakam titles:", dashakamTitles.length);
+  } catch (err) {
+    console.error("Failed to load titles:", err);
+    dashakamTitles = [];
+  }
+}
+
+// 2️⃣ Function to get the English title for a given dashakam number
+function getDashakamTitle(num) {
+  const entry = dashakamTitles.find(t => t.number === num);
+  return entry ? entry.english_title : "";
+}
 
   /*** Load Dashakam (clean version) ***/
   async function loadDashakam(val, autoPlay = false) {
@@ -1444,7 +1467,7 @@ function initThemeDots(defaultTheme = 'green') {
   initFontSizeControls();
   buildGroupGrid();
   loadDashakam('001').catch(e => console.error('initial loadDashakam error', e));
-
+  loadDashakamTitles();
  
   function initSpeedButton() {
     const audioEl = document.getElementById('audio');
