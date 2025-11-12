@@ -676,7 +676,7 @@ function updateSubtitle(index) {
 
   // Highlight mahāprāṇas
   let verseText = highlightMahapraana(showTranslit ? parsed.verseTrans : parsed.verseDev, script);
-  let splitText = highlightMahapraana(showTranslit ? parsed.splitTrans : parsed.splitDev, script);
+  let splitText = = showTranslit ? parsed.splitTrans : parsed.splitDev;
 
   // Render text
   verseDiv.innerHTML = nl2br(verseText);
