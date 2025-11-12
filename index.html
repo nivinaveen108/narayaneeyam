@@ -724,8 +724,7 @@ function highlightMahapraana(text, script = 'devanagari') {
       'र्भ','ब्ध','ब्धे','र्थ','ग्ध','न्ध','र्थ्य','र्था'
     ]);
     const re = new RegExp(devanagariPatterns.join('|'), 'g');
-	return text.replace(re, m => `<span class="mahapraana">${m}</span>\u200D`);
-
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   if (script === 'malayalam') {
@@ -739,8 +738,7 @@ function highlightMahapraana(text, script = 'devanagari') {
       'ർഭ','ബ്ധ','ബ്ധെ','ർഥ','ഗ്ധ','ന്ധ','ര്‍ത്ഥ്യ','ര്‍ത്ഥാ'
     ]);
     const re = new RegExp(malPatterns.join('|'), 'g');
-return text.replace(re, m => `<span class="mahapraana">${m}</span>\u200D`);
-
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   if (script === 'english') {
@@ -750,7 +748,7 @@ return text.replace(re, m => `<span class="mahapraana">${m}</span>\u200D`);
       'cch','cchā','svacch','rbh','bdh','bdhe','rth','gdh','ndh','rthya','rthā'
     ]);
     const re = new RegExp(engPatterns.join('|'), 'gi');
-   return text.replace(re, m => `<span class="mahapraana">${m}</span>\u200D`);
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   return text;
