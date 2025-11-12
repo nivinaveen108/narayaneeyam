@@ -675,19 +675,8 @@ function updateSubtitle(index) {
   const script = showTranslit ? translitState || 'english' : 'devanagari';
 
   // Highlight mahāprāṇas
-let verseTextRaw = showTranslit ? parsed.verseTrans : parsed.verseDev;
-let splitTextRaw = showTranslit ? parsed.splitTrans : parsed.splitDev;
-
-// Apply mahapraana highlighting to each line independently
-let verseText = verseTextRaw
-  .split(/\r?\n+/)
-  .map(line => highlightMahapraana(line, script))
-  .join('<br>');
-let splitText = splitTextRaw
-  .split(/\r?\n+/)
-  .map(line => highlightMahapraana(line, script))
-  .join('<br>');
-
+  let verseText = highlightMahapraana(showTranslit ? parsed.verseTrans : parsed.verseDev, script);
+  let splitText = highlightMahapraana(showTranslit ? parsed.splitTrans : parsed.splitDev, script);
 
   // Render text
   verseDiv.innerHTML = nl2br(verseText);
@@ -723,38 +712,33 @@ function highlightMahapraana(text, script = 'devanagari') {
   if (!text) return '';
   text = String(text).normalize('NFC');
 
-  // helper: sort longest-first
-  const sortByLengthDesc = arr => arr.sort((a, b) => b.length - a.length);
-
-  // helper: safely wrap aspirated sequences + following combining marks
-  const safeWrap = (text, re) => {
-    return text.replace(re, (m, offset, str) => {
-      // capture any combining marks (vowel signs, virama, anusvara, chandrabindu, etc.)
-      const followingMarks = str.slice(offset + m.length).match(/^[\u0900-\u094D\u0D00-\u0D4D]*/u);
-      const marks = followingMarks ? followingMarks[0] : '';
-      return `<span class="mahapraana">${m}${marks}</span>`;
-    });
-  };
+  // helper to sort patterns longest-first to avoid partial match issues
+  const sortByLengthDesc = arr => arr.sort((a,b) => b.length - a.length);
 
   if (script === 'devanagari') {
     const devanagariPatterns = sortByLengthDesc([
+      // basic aspirates
       'ख','घ','छ','झ','ठ','ढ','थ','ध','फ','भ',
+      // frequent aspirated clusters / conjuncts
       'स्थ','स्थि','स्फ','स्फु','द्भ','द्घ','द्ध','ण्ठ','च्छ','च्छा',
       'र्भ','ब्ध','ब्धे','र्थ','ग्ध','न्ध','र्थ्य','र्था'
     ]);
     const re = new RegExp(devanagariPatterns.join('|'), 'g');
-    return safeWrap(text, re);
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   if (script === 'malayalam') {
     const malPatterns = sortByLengthDesc([
+      // basic aspirates
       'ഖ','ഘ','ഛ','ഝ','ഠ','ഢ','ഥ','ധ','ഫ','ഭ',
+      // variants / clusters
       'സ്ഥ','സ്ഥി','സ്ഫ','സ്ഫു','ദ്ഭ','ദ്ഘ','ദ്ധ','ണ്ഠ',
+      // aspirated CH forms
       'ഛാ','ഛ്','സ്വഛ','ഛ്ച','ഛ്ത',
       'ർഭ','ബ്ധ','ബ്ധെ','ർഥ','ഗ്ധ','ന്ധ','ര്‍ത്ഥ്യ','ര്‍ത്ഥാ'
     ]);
     const re = new RegExp(malPatterns.join('|'), 'g');
-    return safeWrap(text, re);
+    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
   if (script === 'english') {
@@ -764,7 +748,6 @@ function highlightMahapraana(text, script = 'devanagari') {
       'cch','cchā','svacch','rbh','bdh','bdhe','rth','gdh','ndh','rthya','rthā'
     ]);
     const re = new RegExp(engPatterns.join('|'), 'gi');
-    // no combining marks needed for English
     return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
   }
 
