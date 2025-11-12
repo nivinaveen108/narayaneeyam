@@ -724,7 +724,8 @@ function highlightMahapraana(text, script = 'devanagari') {
       'र्भ','ब्ध','ब्धे','र्थ','ग्ध','न्ध','र्थ्य','र्था'
     ]);
     const re = new RegExp(devanagariPatterns.join('|'), 'g');
-    return text.replace(re, m => `<span class="mahapraana">${m}</span>`);
+	return text.replace(re, m => `<span class="mahapraana">${m}</span>\u200D`);
+
   }
 
   if (script === 'malayalam') {
