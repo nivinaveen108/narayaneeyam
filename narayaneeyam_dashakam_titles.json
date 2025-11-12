@@ -184,6 +184,11 @@
     "sanskrit_title": "श्रीकृष्णावतारोपक्रमम् ।",
     "english_title": "- Prelude To the Incarnation As Krishna"
   },
+   {
+    "number": 38,
+    "sanskrit_title": "श्री कृष्ण का जन्म ।",
+    "english_title": "- The Birth of Shri Krishna"
+  },
   {
     "number": 39,
     "sanskrit_title": "ददर्श गगनोच्चलज्जलभरां कलिन्दात्मजाम् ।",
@@ -243,6 +248,12 @@
     "number": 50,
     "sanskrit_title": "वत्सासुर-बकासुरयोः वधम् ।",
     "english_title": "- Slaying of VatsAsura And BakAsura"
+  },
+  
+  {
+    "number": 51,
+    "sanskrit_title": "अघासुर वधम् ।",
+    "english_title": "- Slaying of Aghasura"
   },
   {
     "number": 52,
