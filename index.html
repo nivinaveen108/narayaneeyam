@@ -542,52 +542,79 @@
             }
             
              /*** Cue parsing ***/
-function parseCueText(text, script = 'devanagari') {
-    const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim());
-    const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+function parseCueText(text) {
+    const lines = (text || "")
+        .split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(Boolean);
 
-    let verseLines = [];
-    let splitLines = [];
-    let meaningLines = [];
+    const verseEndRegex = /(॥\s*[०-९0-9]+\s*॥|\.{2}\s*[0-9]+\s*\.{2})/;
 
-    let mode = 'verse';
+    let verse = [];
+    let split = [];
+    let meaning = [];
+
+    let section = "verse";
+
+    const isASCII = s => /^[\x00-\x7F]+$/.test(s);
+    const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
 
     for (const line of lines) {
-        if (!line) continue;
 
-        if (mode === 'verse') {
-            verseLines.push(line);
+        // -------------------------
+        // 1️⃣ VERSE SECTION
+        // -------------------------
+        if (section === "verse") {
+            verse.push(line);
+
             if (verseEndRegex.test(line)) {
-                mode = 'split';
+                section = "split";
             }
             continue;
         }
 
-        if (mode === 'split') {
-            // Meaning starts ONLY when:
-            // 1. A line begins with a known marker OR
-            // 2. A blank line occurs after split section (already removed)
-            // 3. Optional: if line looks like a paragraph (2+ sentences)
-            if (/^[-–—]/.test(line) || /^[A-Za-z]/.test(line) && script === 'devanagari') {
-                mode = 'meaning';
-                meaningLines.push(line);
-            } else {
-                splitLines.push(line);
-            }
+        // -------------------------
+        // 2️⃣ Detect meaning (Translit + Malayalam)
+        // -------------------------
+
+        const longLine = line.length > 30;
+
+        const isMeaningLine =
+            longLine &&
+            (isASCII(line) || isMalayalam(line));
+
+        if (section === "split" && isMeaningLine) {
+            section = "meaning";
+            meaning.push(line);
             continue;
         }
 
-        if (mode === 'meaning') {
-            meaningLines.push(line);
+        // -------------------------
+        // SPLIT words (only for Devanagari / English VTTs)
+        // -------------------------
+        if (section === "split") {
+            split.push(line);
+            continue;
+        }
+
+        // -------------------------
+        // 3️⃣ MEANING SECTION
+        // -------------------------
+        if (section === "meaning") {
+            meaning.push(line);
+            continue;
         }
     }
 
     return {
-        verseDev: script === 'devanagari' ? verseLines.join('\n') : '',
-        splitDev: script === 'devanagari' ? splitLines.join('\n') : '',
-        verseTrans: script !== 'devanagari' ? verseLines.join('\n') : '',
-        splitTrans: script !== 'devanagari' ? splitLines.join('\n') : '',
-        meaning: meaningLines.join('\n')
+        verseDev: verse.join("\n"),
+        splitDev: split.join("\n"),
+
+        // For English or transliteration
+        verseTrans: verse.join("\n"),
+        splitTrans: split.join("\n"),
+
+        meaning: meaning.join("\n")
     };
 }
             
