@@ -750,7 +750,7 @@
             // 1️⃣ Load the titles JSON once at startup
             async function loadDashakamTitles() {
               try {
-                const res = await fetch("narayaneeyam_dashakam_titles.json");
+                const res = await fetch("title_and_meter.json");
                 dashakamTitles = await res.json();
                 console.log("Loaded Dashakam titles:", dashakamTitles.length);
               } catch (err) {
