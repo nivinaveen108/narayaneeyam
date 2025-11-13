@@ -541,30 +541,44 @@
               infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3, '0')} — ${title} — Verse ${verseNum}`;
             }
             
-              /*** Cue parsing ***/
-              function parseCueText(text) {
-                const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-                const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
-                let verseLines = [], splitLines = [], asciiLines = [];
-                let foundVerseEnd = false, foundMeaningStart = false;
-                for (const line of lines) {
-                  if (!foundVerseEnd) {
-                    verseLines.push(line);
-                    if (verseEndRegex.test(line)) foundVerseEnd = true;
-                  } else if (!foundMeaningStart) {
-                    if (isAscii(line)) { foundMeaningStart = true; asciiLines.push(line); }
-                    else splitLines.push(line);
-                  } else {
-                    asciiLines.push(line);
-                  }
-                }
-                const verseDev = verseLines.join('\n');
-                const splitDev = splitLines.join('\n');
-                const verseTrans = asciiLines.join('\n') || verseDev;
-                const splitTrans = asciiLines.join('\n') || splitDev;
-                const meaning = asciiLines.join('\n') || '';
-                return { verseDev, splitDev, verseTrans, splitTrans, meaning };
-              }
+             /*** Cue parsing ***/
+/*** Cue parsing ***/
+function parseCueText(text, script = 'devanagari') {
+  const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+
+  let verseLines = [], splitLines = [], meaningLines = [];
+  let foundVerseEnd = false, foundMeaningStart = false;
+
+  for (const line of lines) {
+    if (!foundVerseEnd) {
+      // First part is always the main verse
+      verseLines.push(line);
+      if (verseEndRegex.test(line)) foundVerseEnd = true;
+    } else if (!foundMeaningStart) {
+      // Split words come next unless we detect ASCII (for transliteration)
+      if (isAscii(line) && script !== 'devanagari') {
+        foundMeaningStart = true;
+        meaningLines.push(line);
+      } else {
+        splitLines.push(line);
+      }
+    } else {
+      // Anything after is meaning
+      meaningLines.push(line);
+    }
+  }
+
+  return {
+    verseDev: script === 'devanagari' ? verseLines.join('\n') : '',
+    splitDev: script === 'devanagari' ? splitLines.join('\n') : '',
+    verseTrans: script !== 'devanagari' ? verseLines.join('\n') : '',
+    splitTrans: script !== 'devanagari' ? splitLines.join('\n') : '',
+    meaning: meaningLines.join('\n')
+  };
+}
+
+
             
               /*** VTT loader ***/
               async function loadVTT(url) {
