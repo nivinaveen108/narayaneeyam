@@ -573,44 +573,26 @@ function parseCueText(text, script = 'devanagari') {
         }
 
         // -------------------------
-        // 2️⃣ SPLIT vs MEANING
+        // 2️⃣ SPLIT + MEANING
         // -------------------------
-
         if (section === "split") {
             if (script === 'devanagari') {
-                // Everything stays in split until we detect a paragraph-like meaning
-                // Usually in devanagari VTT, there is no meaning section
+                // Everything stays in split
                 split.push(line);
                 continue;
             }
 
             // For English or Malayalam
-            const longLine = line.length > 40;
-            const hasHyphen = line.includes("-");
-            const wordCount = line.split(/\s+/).length;
+            // Split lines by tab first, fallback to multiple spaces
+            const parts = line.split(/\t| {2,}/);
 
-            const isEnglishMeaning =
-                script === 'english' &&
-                longLine &&
-                !hasHyphen &&
-                wordCount > 5;
-
-            const isMalayalamMeaning =
-                script === 'malayalam' &&
-                longLine &&
-                isMalayalam(line) &&
-                wordCount > 6;
-
-            const isMeaningLine = isEnglishMeaning || isMalayalamMeaning;
-
-            if (isMeaningLine) {
-                section = "meaning";
-                meaning.push(line);
-                continue;
+            if (parts.length === 2) {
+                split.push(parts[0].trim());
+                meaning.push(parts[1].trim());
+            } else {
+                // If line has only one part, assume it's split word
+                split.push(line);
             }
-
-            // Otherwise it is still split
-            split.push(line);
             continue;
         }
 
