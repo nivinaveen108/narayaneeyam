@@ -542,7 +542,6 @@
             }
             
              /*** Cue parsing ***/
-/*** Cue parsing ***/
 function parseCueText(text, script = 'devanagari') {
   const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
@@ -577,7 +576,6 @@ function parseCueText(text, script = 'devanagari') {
     meaning: meaningLines.join('\n')
   };
 }
-
 
             
               /*** VTT loader ***/
@@ -628,11 +626,11 @@ function parseCueText(text, script = 'devanagari') {
               if (!cues || index < 0 || index >= cues.length) return;
               currentCueIndex = index;
             
-              const parsed = parseCueText(cues[index].text);
             
-              // Determine active script
-              const script = showTranslit ? translitState || 'english' : 'devanagari';
-            
+const script = showTranslit ? translitState || 'english' : 'devanagari';
+const parsed = parseCueText(cues[index].text, script);
+
+           
               // --- Always normalize and re-highlight freshly ---
               const verseRaw = showTranslit ? parsed.verseTrans : parsed.verseDev;
               const splitRaw = showTranslit ? parsed.splitTrans : parsed.splitDev;
