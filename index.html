@@ -506,7 +506,7 @@
               // seek state flags
               let isSeeking = false;
               let lastSeekTarget = 0;
-            
+            let translitState = 'devanagari';
               /*** Helpers ***/
               const nl2br = s => (s ? s.replace(/\n/g, '<br>') : '');
               const isAscii = s => /^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(s);
@@ -542,7 +542,7 @@
             }
             
              /*** Cue parsing ***/
-function parseCueText(text) {
+function parseCueText(text, script = 'devanagari') {
     const lines = (text || "")
         .split(/\r?\n/)
         .map(l => l.trim())
@@ -573,57 +573,61 @@ function parseCueText(text) {
         }
 
         // -------------------------
-        // 2️⃣ RULES FOR MEANING DETECTION
+        // 2️⃣ SPLIT vs MEANING
         // -------------------------
 
-        const longLine = line.length > 40;
-        const hasHyphen = line.includes("-");
-        const wordCount = line.split(/\s+/).length;
-
-        // ENGLISH meaning rule
-        const isEnglishMeaning =
-            longLine &&
-            !isMalayalam(line) &&
-            !hasHyphen &&
-            wordCount > 5;      // real sentence
-
-        // MALAYALAM meaning rule
-        const isMalayalamMeaning =
-            longLine &&
-            isMalayalam(line) &&
-            wordCount > 6;      // not short split words
-
-        const isMeaningLine = isEnglishMeaning || isMalayalamMeaning;
-
-        if (section === "split" && isMeaningLine) {
-            section = "meaning";
-            meaning.push(line);
-            continue;
-        }
-
-        // -------------------------
-        // 3️⃣ SPLIT SECTION
-        // -------------------------
         if (section === "split") {
+            if (script === 'devanagari') {
+                // Everything stays in split until we detect a paragraph-like meaning
+                // Usually in devanagari VTT, there is no meaning section
+                split.push(line);
+                continue;
+            }
+
+            // For English or Malayalam
+            const longLine = line.length > 40;
+            const hasHyphen = line.includes("-");
+            const wordCount = line.split(/\s+/).length;
+
+            const isEnglishMeaning =
+                script === 'english' &&
+                longLine &&
+                !hasHyphen &&
+                wordCount > 5;
+
+            const isMalayalamMeaning =
+                script === 'malayalam' &&
+                longLine &&
+                isMalayalam(line) &&
+                wordCount > 6;
+
+            const isMeaningLine = isEnglishMeaning || isMalayalamMeaning;
+
+            if (isMeaningLine) {
+                section = "meaning";
+                meaning.push(line);
+                continue;
+            }
+
+            // Otherwise it is still split
             split.push(line);
             continue;
         }
 
         // -------------------------
-        // 4️⃣ MEANING SECTION
+        // 3️⃣ MEANING SECTION
         // -------------------------
         if (section === "meaning") {
             meaning.push(line);
-            continue;
         }
     }
 
     return {
-        verseDev: verse.join("\n"),
-        splitDev: split.join("\n"),
+        verseDev: script === 'devanagari' ? verse.join("\n") : '',
+        splitDev: script === 'devanagari' ? split.join("\n") : '',
 
-        verseTrans: verse.join("\n"),
-        splitTrans: split.join("\n"),
+        verseTrans: script !== 'devanagari' ? verse.join("\n") : '',
+        splitTrans: script !== 'devanagari' ? split.join("\n") : '',
 
         meaning: meaning.join("\n")
     };
@@ -1208,7 +1212,7 @@ const parsed = parseCueText(cues[index].text, script);
               if (gotoToggle) { gotoToggle.addEventListener('click', () => openGoto(!gotoOpen)); }
             
              // Only declare translitState once
-            let translitState = 'devanagari';
+            
             // showTranslit = true; // assign, do not redeclare elsewhere
             
             async function loadTranslitCues(dashNum = null) {
