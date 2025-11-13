@@ -557,7 +557,6 @@ function parseCueText(text, script = 'devanagari') {
     const hasEnglishWords = s => /[a-zA-Z]/.test(s);
     const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
 
-    // Find last delimiter line for Malayalam
     let lastDelimiterIndex = -1;
     if (script === 'malayalam') {
         for (let i = lines.length - 1; i >= 0; i--) {
@@ -567,6 +566,9 @@ function parseCueText(text, script = 'devanagari') {
             }
         }
     }
+
+    // Store lengths of transliteration lines for English split detection
+    let splitLineLengths = [];
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -606,13 +608,17 @@ function parseCueText(text, script = 'devanagari') {
                 continue;
             }
             if (mode === 'split') {
-                // Keep all Sanskrit transliteration in split
-                if (!hasEnglishWords(line) || line.length < 40) {
-                    splitLines.push(line);
-                } else {
-                    // This line is English meaning
+                const isFullSentence = /^[A-Z]/.test(line); // Capital letter → meaning
+
+                // If line length is similar to a previous transliteration line, keep in split
+                const matchesSplitLength = splitLineLengths.some(len => Math.abs(len - line.length) <= 3);
+
+                if (isFullSentence && !matchesSplitLength) {
                     mode = 'meaning';
                     meaningLines.push(line);
+                } else {
+                    splitLines.push(line);
+                    splitLineLengths.push(line.length);
                 }
                 continue;
             }
@@ -632,11 +638,11 @@ function parseCueText(text, script = 'devanagari') {
                 continue;
             }
             if (mode === 'split') {
-                // Keep short Malayalam transliteration / phrases
-                if (line.length < 40) {
+                const isFullSentence = /^[A-Z\u0D05-\u0D39]/.test(line); // Malayalam sentences may start with vowels/consonants
+
+                if (line.length < 40 && !isFullSentence) {
                     splitLines.push(line);
                 } else {
-                    // Long line → meaning
                     mode = 'meaning';
                     meaningLines.push(line);
                 }
