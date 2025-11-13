@@ -29,9 +29,6 @@
          --glass-border: rgba(255,255,255,0.06);
          --control-bg: rgba(255,255,255,0.03);
          --is-dark: 1; /* 1 = dark mode, 0 = light mode */
- --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
-    --mahapraana-color: #ff7faa;    /* default dark mode color for Mahapraana highlighting */
-
          }
          /* Light theme overrides (applied when body has .light-theme) */
          body.light-theme {
@@ -47,8 +44,6 @@
          --page-bg: linear-gradient(180deg,#fafafa 0%, #f4f4f6 100%);
          --glass-border: rgba(0,0,0,0.06);
          --control-bg: rgba(245,245,247,0.8);
-         --dashakam-color: #d60045;      /* readable version on light bg */
-    	--mahapraana-color: #ff5a7d;
          }
          /* smooth transitions */
          * { box-sizing: border-box; transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease; }
@@ -157,16 +152,10 @@
          .time-left, .time-right{ display:flex; align-items:center; gap:8px; }
          /* navigate rows - identical layout */
          .navigate-row{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
-
-/* Mahāprāṇa highlighting */
-.mahapraana {
-    color: var(--mahapraana-color);
-    font-weight: bold;
-    /* optional: subtle shadow for depth */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
-}
-
-
+         .mahapraana {
+         font-weight: bold; /* optional */
+         color: var(--mahapraana-color); /* use JS-set variable */
+         }
          /* Buttons - preserve sizes but restyle visuals */
          button{
          cursor:pointer;
@@ -221,22 +210,20 @@
          .group-select:hover{ background: var(--accent-soft); box-shadow: 0 8px 18px rgba(0,0,0,0.6) inset; }
          /* time info text (unchanged layout) */
          #timeDisplay, 
-
-/* Dashakam title */
-body.light-theme #currentInfo {
-    color: var(--dashakam-color);
-    font-weight: 800;
-    font-size: 1rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-}
-
-body:not(.light-theme) #currentInfo {
-    color: var(--dashakam-color);
-    font-weight: 800;
-    font-size: 1rem;
-    text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
-}
-
+         /* Light theme: bold pink, subtle dark outline for readability */
+         body.light-theme #currentInfo {
+         color: #ff2d55;        /* bright pink */
+         font-weight: 800;      /* extra-bold */
+         font-size: 1.0rem;    /* slightly smaller */
+         text-shadow: 1px 1px 2px rgba(0,0,0,0.4); /* subtle shadow for contrast */
+         }
+         /* Dark theme: bold pink, subtle light outline for readability */
+         body:not(.light-theme) #currentInfo {
+         color: #ff2d55;        /* bright pink */
+         font-weight: 800;      /* extra-bold */
+         font-size: 1.0rem;    /* slightly smaller */
+         text-shadow: 1px 1px 2px rgba(255,255,255,0.3); /* subtle highlight for dark bg */
+         }
          /* SUBTITLE CONTAINER - IMPORTANT: DO NOT CHANGE SIZE/STRUCTURE */
          /* exactly preserve max-width, margin, padding, border, border-radius, etc.  */
          #subtitleContainer{
@@ -322,21 +309,6 @@ body:not(.light-theme) #currentInfo {
          border-color: rgba(255,255,255,0.08) !important;
          background: transparent !important;
          }
-
-body.light-theme #subtitleContainer {
-    background: rgba(255,255,255,0.85);
-    border: 1px solid rgba(0,0,0,0.06);
-}
-
-body.light-theme #verse,
-body.light-theme #splitWords,
-body.light-theme #meaning {
-    color: #111;
-    text-shadow: none;
-    -webkit-font-smoothing: subpixel-antialiased;
-}
-
-
          body.light-theme .font-size-controls button {
          color: var(--text-primary) !important;
          border-color: rgba(0,0,0,0.1) !important;
@@ -1255,90 +1227,78 @@ body.light-theme #meaning {
                  Tiny helpers (these are exactly the same you had)
                  ============================ */
             
-            // Updated themes with dashakam and mahapraana colors
-const themes = {
-  dark: {
-    primary: "#1c1c1e",
-    "primary-dark": "#121212",
-    "primary-light": "#2c2c2e",
-    bg: "#000000",
-    text: "#ffffff",
-    dashakam: "#ff2d55",       // Dashakam title
-    mahapraana: "#ff4d4d"      // Mahāprāṇa highlight in dark
-  },
-  light: {
-    primary: "#f2f2f7",
-    "primary-dark": "#d1d1d6",
-    "primary-light": "#ffffff",
-    bg: "#ffffff",
-    text: "#1c1c1e",
-    dashakam: "#d12a2a",       // Dashakam title
-    mahapraana: "#ff2d55"      // Force pink for Mahāprāṇa in light
-  },
-  pink: {
-    primary: "#ff375f",
-    "primary-dark": "#bf0f3f",
-    "primary-light": "#ff8fa0",
-    bg: "#fff0f2",
-    text: "#3c003c",
-    dashakam: "#e6004c",
-    mahapraana: "#ff2d55"
-  },
-  purple: {
-    primary: "#bf5af2",
-    "primary-dark": "#7321bf",
-    "primary-light": "#dab6f7",
-    bg: "#f7f0ff",
-    text: "#2c004c",
-    dashakam: "#8000ff",
-    mahapraana: "#ff2d55"      // pink for light readability
-  },
-  blue: {
-    primary: "#0a84ff",
-    "primary-dark": "#0050cc",
-    "primary-light": "#a6d1ff",
-    bg: "#f0f8ff",
-    text: "#003366",
-    dashakam: "#0066cc",
-    mahapraana: "#ff2d55"
-  },
-  orange: {
-    primary: "#ff9500",
-    "primary-dark": "#cc7000",
-    "primary-light": "#ffd49c",
-    bg: "#fff6ed",
-    text: "#663800",
-    dashakam: "#ff5500",
-    mahapraana: "#ff2d55"
-  }
-};
-
-document.querySelectorAll(".theme-dot").forEach(dot => {
-  dot.addEventListener("click", () => {
-    const theme = dot.dataset.theme;
-    const t = themes[theme];
-    if (!t) return;
-
-    // Apply CSS variables dynamically
-    document.documentElement.style.setProperty("--accent", t.primary);
-    document.documentElement.style.setProperty("--accent-soft", t["primary-light"] + "22");
-    document.documentElement.style.setProperty("--page-bg", t.bg);
-    document.documentElement.style.setProperty("--text-primary", t.text);
-    document.documentElement.style.setProperty("--glass-strong", t["primary-dark"] + "b3");
-    document.documentElement.style.setProperty("--glass-soft", t["primary-dark"] + "8c");
-
-    // Dashakam title (theme-specific)
-    document.documentElement.style.setProperty("--dashakam-color", t.dashakam);
-
-    // Mahāprāṇa highlighting: force pink for light mode
-    const mahapraanaColor = document.body.classList.contains("light-theme") ? "#ff2d55" : t.mahapraana;
-    document.documentElement.style.setProperty("--mahapraana-color", mahapraanaColor);
-
-    // Mark active
-    document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
-    dot.classList.add("active");
-  });
-});
+            const themes = {
+              dark: {
+                primary: "#1c1c1e",
+                "primary-dark": "#121212",
+                "primary-light": "#2c2c2e",
+                bg: "#000000",
+                text: "#ffffff",
+                highlight: "#ff4d4d" // Mahāprāṇa highlight in dark
+              },
+              light: {
+                primary: "#f2f2f7",
+                "primary-dark": "#d1d1d6",
+                "primary-light": "#ffffff",
+                bg: "#ffffff",
+                text: "#1c1c1e",
+                highlight: "#d12a2a" // Mahāprāṇa highlight in light
+              },
+              pink: {
+                primary: "#ff375f",
+                "primary-dark": "#bf0f3f",
+                "primary-light": "#ff8fa0",
+                bg: "#fff0f2",
+                text: "#3c003c",
+                highlight: "#e6004c"
+              },
+              purple: {
+                primary: "#bf5af2",
+                "primary-dark": "#7321bf",
+                "primary-light": "#dab6f7",
+                bg: "#f7f0ff",
+                text: "#2c004c",
+                highlight: "#8000ff"
+              },
+              blue: {
+                primary: "#0a84ff",
+                "primary-dark": "#0050cc",
+                "primary-light": "#a6d1ff",
+                bg: "#f0f8ff",
+                text: "#003366",
+                highlight: "#0066cc"
+              },
+              orange: {
+                primary: "#ff9500",
+                "primary-dark": "#cc7000",
+                "primary-light": "#ffd49c",
+                bg: "#fff6ed",
+                text: "#663800",
+                highlight: "#ff5500"
+              }
+            };
+            
+            
+            
+            document.querySelectorAll(".theme-dot").forEach(dot => {
+              dot.addEventListener("click", () => {
+                const theme = dot.dataset.theme;
+                const t = themes[theme];
+                if (!t) return;
+            
+                // Apply CSS variables dynamically
+                document.documentElement.style.setProperty("--accent", t.primary);
+                document.documentElement.style.setProperty("--accent-soft", t["primary-light"] + "22"); // subtle alpha
+                document.documentElement.style.setProperty("--page-bg", t.bg);
+                document.documentElement.style.setProperty("--text-primary", t.text);
+                document.documentElement.style.setProperty("--glass-strong", t["primary-dark"] + "b3");
+                document.documentElement.style.setProperty("--glass-soft", t["primary-dark"] + "8c");
+            
+                // Mark active
+                document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
+                dot.classList.add("active");
+              });
+            });
             
             function applyTheme(themeName) {
               const vars = themes[themeName];
