@@ -542,41 +542,34 @@
             }
             
              /*** Cue parsing ***/
-function parseCueText(text, script = "devanagari") {
-    const lines = (text || "")
-        .split(/\r?\n/)
-        .map(l => l.trim());
-
+function parseCueText(text, script = 'devanagari') {
+    const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim());
     const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
 
     let verseLines = [];
     let splitLines = [];
     let meaningLines = [];
 
-    let section = "verse";
-    let blankSeenAfterVerse = false;
+    let mode = 'verse';
 
     for (const line of lines) {
-        if (!line) {
-            // blank lines ONLY matter after verse ends
-            if (section === "split") {
-                blankSeenAfterVerse = true;
-                section = "meaning";
-            }
-            continue;
-        }
+        if (!line) continue;
 
-        if (section === "verse") {
+        if (mode === 'verse') {
             verseLines.push(line);
             if (verseEndRegex.test(line)) {
-                section = "split";
+                mode = 'split';
             }
             continue;
         }
 
-        if (section === "split") {
-            if (blankSeenAfterVerse) {
-                section = "meaning";
+        if (mode === 'split') {
+            // Meaning starts ONLY when:
+            // 1. A line begins with a known marker OR
+            // 2. A blank line occurs after split section (already removed)
+            // 3. Optional: if line looks like a paragraph (2+ sentences)
+            if (/^[-–—]/.test(line) || /^[A-Za-z]/.test(line) && script === 'devanagari') {
+                mode = 'meaning';
                 meaningLines.push(line);
             } else {
                 splitLines.push(line);
@@ -584,17 +577,17 @@ function parseCueText(text, script = "devanagari") {
             continue;
         }
 
-        if (section === "meaning") {
+        if (mode === 'meaning') {
             meaningLines.push(line);
         }
     }
 
     return {
-        verseDev: script === "devanagari" ? verseLines.join("\n") : "",
-        splitDev: script === "devanagari" ? splitLines.join("\n") : "",
-        verseTrans: script !== "devanagari" ? verseLines.join("\n") : "",
-        splitTrans: script !== "devanagari" ? splitLines.join("\n") : "",
-        meaning: meaningLines.join("\n")
+        verseDev: script === 'devanagari' ? verseLines.join('\n') : '',
+        splitDev: script === 'devanagari' ? splitLines.join('\n') : '',
+        verseTrans: script !== 'devanagari' ? verseLines.join('\n') : '',
+        splitTrans: script !== 'devanagari' ? splitLines.join('\n') : '',
+        meaning: meaningLines.join('\n')
     };
 }
             
