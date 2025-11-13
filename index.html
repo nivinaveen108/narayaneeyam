@@ -545,8 +545,8 @@
 function parseCueText(text, script = 'devanagari') {
     const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-    const devanagariVerseEnd = /॥\s*[०-९0-9]+\s*॥/;       // Devanagari
-    const malayalamVerseEnd = /\.{2}\s*[0-9]+\s*\.{2}/;      // Malayalam
+    const devanagariVerseEnd = /॥\s*[०-९0-9]+\s*॥/;
+    const malayalamVerseEnd = /\.{2}\s*[0-9]+\s*\.{2}/;
 
     let verseLines = [];
     let splitLines = [];
@@ -554,17 +554,12 @@ function parseCueText(text, script = 'devanagari') {
     let mode = 'verse';
 
     const isASCII = s => /^[\x00-\x7F]+$/.test(s);
+    const hasEnglishWords = s => /[a-zA-Z]/.test(s);
+    const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
 
-    // Find last delimiter line for English / Malayalam
+    // Find last delimiter line for Malayalam
     let lastDelimiterIndex = -1;
-    if (script === 'english') {
-        for (let i = lines.length - 1; i >= 0; i--) {
-            if (lines[i].includes('||')) {
-                lastDelimiterIndex = i;
-                break;
-            }
-        }
-    } else if (script === 'malayalam') {
+    if (script === 'malayalam') {
         for (let i = lines.length - 1; i >= 0; i--) {
             if (malayalamVerseEnd.test(lines[i])) {
                 lastDelimiterIndex = i;
@@ -607,16 +602,17 @@ function parseCueText(text, script = 'devanagari') {
         else if (script === 'english') {
             if (mode === 'verse') {
                 verseLines.push(line);
-                if (i === lastDelimiterIndex) mode = 'split';
+                if (line.includes('||')) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
-                const longLine = line.length > 30;
-                if (longLine) {
+                // Keep all Sanskrit transliteration in split
+                if (!hasEnglishWords(line) || line.length < 40) {
+                    splitLines.push(line);
+                } else {
+                    // This line is English meaning
                     mode = 'meaning';
                     meaningLines.push(line);
-                } else {
-                    splitLines.push(line);
                 }
                 continue;
             }
@@ -636,10 +632,11 @@ function parseCueText(text, script = 'devanagari') {
                 continue;
             }
             if (mode === 'split') {
-                // short lines -> split words, long lines -> meaning
+                // Keep short Malayalam transliteration / phrases
                 if (line.length < 40) {
                     splitLines.push(line);
                 } else {
+                    // Long line → meaning
                     mode = 'meaning';
                     meaningLines.push(line);
                 }
@@ -660,7 +657,6 @@ function parseCueText(text, script = 'devanagari') {
         meaning: meaningLines.join("\n")
     };
 }
-            
               /*** VTT loader ***/
               async function loadVTT(url) {
                 try {
