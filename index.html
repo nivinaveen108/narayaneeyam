@@ -548,7 +548,6 @@ function parseCueText(text) {
         .map(l => l.trim())
         .filter(Boolean);
 
-    // Detects ॥ 1 ॥   or  .. 1 ..
     const verseEndRegex = /(॥\s*[०-९0-9]+\s*॥|\.{2}\s*[0-9]+\s*\.{2})/;
 
     let verse = [];
@@ -557,7 +556,6 @@ function parseCueText(text) {
 
     let section = "verse";
 
-    const isASCII = s => /^[\x00-\x7F]+$/.test(s);
     const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
 
     for (const line of lines) {
@@ -567,6 +565,7 @@ function parseCueText(text) {
         // -------------------------
         if (section === "verse") {
             verse.push(line);
+
             if (verseEndRegex.test(line)) {
                 section = "split";
             }
@@ -574,28 +573,27 @@ function parseCueText(text) {
         }
 
         // -------------------------
-        // Detect "meaning" for ENGLISH
+        // 2️⃣ RULES FOR MEANING DETECTION
         // -------------------------
-        const longLine = line.length > 30;
 
+        const longLine = line.length > 40;
+        const hasHyphen = line.includes("-");
+        const wordCount = line.split(/\s+/).length;
+
+        // ENGLISH meaning rule
         const isEnglishMeaning =
-            longLine && isASCII(line);
-
-        // -------------------------
-        // Detect "meaning" for MALAYALAM
-        // Avoid treating short split-like words as meaning
-        // -------------------------
-        const looksLikeSplit =
-            line.includes("-") ||                  // സാന്ദ്ര-ആനന്ദ | sāndra-ānanda
-            line.split(" ").length <= 4;           // split usually short 1–3 words
-
-        const isMalayalamMeaning =
-            isMalayalam(line) &&
             longLine &&
-            !looksLikeSplit;                       // THIS FIXES YOUR ISSUE
+            !isMalayalam(line) &&
+            !hasHyphen &&
+            wordCount > 5;      // real sentence
 
-        const isMeaningLine =
-            isEnglishMeaning || isMalayalamMeaning;
+        // MALAYALAM meaning rule
+        const isMalayalamMeaning =
+            longLine &&
+            isMalayalam(line) &&
+            wordCount > 6;      // not short split words
+
+        const isMeaningLine = isEnglishMeaning || isMalayalamMeaning;
 
         if (section === "split" && isMeaningLine) {
             section = "meaning";
@@ -604,8 +602,7 @@ function parseCueText(text) {
         }
 
         // -------------------------
-        // SPLIT SECTION
-        // (only when not meaning)
+        // 3️⃣ SPLIT SECTION
         // -------------------------
         if (section === "split") {
             split.push(line);
@@ -613,7 +610,7 @@ function parseCueText(text) {
         }
 
         // -------------------------
-        // 3️⃣ MEANING SECTION
+        // 4️⃣ MEANING SECTION
         // -------------------------
         if (section === "meaning") {
             meaning.push(line);
@@ -625,7 +622,6 @@ function parseCueText(text) {
         verseDev: verse.join("\n"),
         splitDev: split.join("\n"),
 
-        // Transliteration versions
         verseTrans: verse.join("\n"),
         splitTrans: split.join("\n"),
 
