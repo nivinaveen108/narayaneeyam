@@ -544,8 +544,9 @@
              /*** Cue parsing ***/
 function parseCueText(text, script = 'devanagari') {
     const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/; // Devanagari verse end
-    const malayalamVerseEnd = /\.{2}\s*[0-9]+\s*\.{2}/; // Malayalam verse end
+
+    const devanagariVerseEnd = /॥\s*[०-९0-9]+\s*॥/;       // Devanagari
+    const malayalamVerseEnd = /\.{2}\s*[0-9]+\s*\.{2}/;      // Malayalam
 
     let verseLines = [];
     let splitLines = [];
@@ -553,14 +554,20 @@ function parseCueText(text, script = 'devanagari') {
     let mode = 'verse';
 
     const isASCII = s => /^[\x00-\x7F]+$/.test(s);
-    const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
 
-    // For English, find last || index to split verse
-    let lastDoublePipeIndex = -1;
+    // Find last delimiter line for English / Malayalam
+    let lastDelimiterIndex = -1;
     if (script === 'english') {
         for (let i = lines.length - 1; i >= 0; i--) {
             if (lines[i].includes('||')) {
-                lastDoublePipeIndex = i;
+                lastDelimiterIndex = i;
+                break;
+            }
+        }
+    } else if (script === 'malayalam') {
+        for (let i = lines.length - 1; i >= 0; i--) {
+            if (malayalamVerseEnd.test(lines[i])) {
+                lastDelimiterIndex = i;
                 break;
             }
         }
@@ -576,7 +583,7 @@ function parseCueText(text, script = 'devanagari') {
         if (script === 'devanagari') {
             if (mode === 'verse') {
                 verseLines.push(line);
-                if (verseEndRegex.test(line)) mode = 'split';
+                if (devanagariVerseEnd.test(line)) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
@@ -600,7 +607,7 @@ function parseCueText(text, script = 'devanagari') {
         else if (script === 'english') {
             if (mode === 'verse') {
                 verseLines.push(line);
-                if (i === lastDoublePipeIndex) mode = 'split';
+                if (i === lastDelimiterIndex) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
@@ -625,10 +632,11 @@ function parseCueText(text, script = 'devanagari') {
         else if (script === 'malayalam') {
             if (mode === 'verse') {
                 verseLines.push(line);
-                if (malayalamVerseEnd.test(line)) mode = 'split';
+                if (i === lastDelimiterIndex) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
+                // short lines -> split words, long lines -> meaning
                 if (line.length < 40) {
                     splitLines.push(line);
                 } else {
