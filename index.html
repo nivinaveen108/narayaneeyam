@@ -543,40 +543,53 @@
             
              /*** Cue parsing ***/
 function parseCueText(text, script = 'devanagari') {
-  const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+    const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim());
+    const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
 
-  let verseLines = [], splitLines = [], meaningLines = [];
-  let foundVerseEnd = false, foundMeaningStart = false;
+    let verseLines = [];
+    let splitLines = [];
+    let meaningLines = [];
 
-  for (const line of lines) {
-    if (!foundVerseEnd) {
-      // First part is always the main verse
-      verseLines.push(line);
-      if (verseEndRegex.test(line)) foundVerseEnd = true;
-    } else if (!foundMeaningStart) {
-      // Split words come next unless we detect ASCII (for transliteration)
-      if (isAscii(line) && script !== 'devanagari') {
-        foundMeaningStart = true;
-        meaningLines.push(line);
-      } else {
-        splitLines.push(line);
-      }
-    } else {
-      // Anything after is meaning
-      meaningLines.push(line);
+    let mode = 'verse';
+
+    for (const line of lines) {
+        if (!line) continue;
+
+        if (mode === 'verse') {
+            verseLines.push(line);
+            if (verseEndRegex.test(line)) {
+                mode = 'split';
+            }
+            continue;
+        }
+
+        if (mode === 'split') {
+            // Meaning starts ONLY when:
+            // 1. A line begins with a known marker OR
+            // 2. A blank line occurs after split section (already removed)
+            // 3. Optional: if line looks like a paragraph (2+ sentences)
+            if (/^[-–—]/.test(line) || /^[A-Za-z]/.test(line) && script === 'devanagari') {
+                mode = 'meaning';
+                meaningLines.push(line);
+            } else {
+                splitLines.push(line);
+            }
+            continue;
+        }
+
+        if (mode === 'meaning') {
+            meaningLines.push(line);
+        }
     }
-  }
 
-  return {
-    verseDev: script === 'devanagari' ? verseLines.join('\n') : '',
-    splitDev: script === 'devanagari' ? splitLines.join('\n') : '',
-    verseTrans: script !== 'devanagari' ? verseLines.join('\n') : '',
-    splitTrans: script !== 'devanagari' ? splitLines.join('\n') : '',
-    meaning: meaningLines.join('\n')
-  };
+    return {
+        verseDev: script === 'devanagari' ? verseLines.join('\n') : '',
+        splitDev: script === 'devanagari' ? splitLines.join('\n') : '',
+        verseTrans: script !== 'devanagari' ? verseLines.join('\n') : '',
+        splitTrans: script !== 'devanagari' ? splitLines.join('\n') : '',
+        meaning: meaningLines.join('\n')
+    };
 }
-
             
               /*** VTT loader ***/
               async function loadVTT(url) {
