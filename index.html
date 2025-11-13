@@ -543,57 +543,44 @@
             
              /*** Cue parsing ***/
 function parseCueText(text, script = 'devanagari') {
-    const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const lines = (text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-    const devanagariVerseEnd = /॥\s*[०-९0-9]+\s*॥/;
-    const malayalamVerseEnd = /\.{2}\s*[0-9]+\s*\.{2}/;
+    const verseEndRegexDev = /॥\s*[०-९0-9]+\s*॥/;       // Devanagari verse end
+    const verseEndRegexMal = /\.\.\s*\d+\s*\.\./;         // Malayalam verse end
+    const verseEndRegexEng = /\|\|\s*\d+\s*\|\|/;        // English transliteration verse end
 
-    let verseLines = [];
-    let splitLines = [];
-    let meaningLines = [];
+    let verse = [];
+    let split = [];
+    let meaning = [];
+
     let mode = 'verse';
 
     const isASCII = s => /^[\x00-\x7F]+$/.test(s);
-    const hasEnglishWords = s => /[a-zA-Z]/.test(s);
     const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
-
-    let lastDelimiterIndex = -1;
-    if (script === 'malayalam') {
-        for (let i = lines.length - 1; i >= 0; i--) {
-            if (malayalamVerseEnd.test(lines[i])) {
-                lastDelimiterIndex = i;
-                break;
-            }
-        }
-    }
-
-    // Store lengths of transliteration lines for English split detection
-    let splitLineLengths = [];
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        if (!line) continue;
 
         // -------------------------
-        // DEVANAGARI
+        // DEVANAGARI: keep old logic
         // -------------------------
         if (script === 'devanagari') {
             if (mode === 'verse') {
-                verseLines.push(line);
-                if (devanagariVerseEnd.test(line)) mode = 'split';
+                verse.push(line);
+                if (verseEndRegexDev.test(line)) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
-                if (/^[-–—]/.test(line) || /^[A-Za-z]/.test(line)) {
+                // short lines = split words, long lines = meaning
+                if (line.length < 60) split.push(line);
+                else {
                     mode = 'meaning';
-                    meaningLines.push(line);
-                } else {
-                    splitLines.push(line);
+                    meaning.push(line);
                 }
                 continue;
             }
             if (mode === 'meaning') {
-                meaningLines.push(line);
+                meaning.push(line);
                 continue;
             }
         }
@@ -603,28 +590,22 @@ function parseCueText(text, script = 'devanagari') {
         // -------------------------
         else if (script === 'english') {
             if (mode === 'verse') {
-                verseLines.push(line);
-                if (line.includes('||')) mode = 'split';
+                verse.push(line);
+                if (verseEndRegexEng.test(line)) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
-                const isFullSentence = /^[A-Z]/.test(line); // Capital letter → meaning
-
-                // If line length is similar to a previous transliteration line, keep in split
-                const matchesSplitLength = splitLineLengths.some(len => Math.abs(len - line.length) <= 3);
-
-                if (isFullSentence && !matchesSplitLength) {
-                    mode = 'meaning';
-                    meaningLines.push(line);
+                // keep all transliteration (ASCII) as split
+                if (isASCII(line) && !/^[A-Z]/.test(line)) {
+                    split.push(line);
                 } else {
-                    splitLines.push(line);
-                    splitLineLengths.push(line.length);
+                    mode = 'meaning';
+                    meaning.push(line);
                 }
                 continue;
             }
             if (mode === 'meaning') {
-                meaningLines.push(line);
-                continue;
+                meaning.push(line);
             }
         }
 
@@ -633,34 +614,33 @@ function parseCueText(text, script = 'devanagari') {
         // -------------------------
         else if (script === 'malayalam') {
             if (mode === 'verse') {
-                verseLines.push(line);
-                if (i === lastDelimiterIndex) mode = 'split';
+                verse.push(line);
+                if (verseEndRegexMal.test(line)) mode = 'split';
                 continue;
             }
             if (mode === 'split') {
-                const isFullSentence = /^[A-Z\u0D05-\u0D39]/.test(line); // Malayalam sentences may start with vowels/consonants
-
-                if (line.length < 40 && !isFullSentence) {
-                    splitLines.push(line);
-                } else {
+                // short lines = split words
+                if (line.length <= 40) split.push(line);
+                else {
                     mode = 'meaning';
-                    meaningLines.push(line);
+                    meaning.push(line);
                 }
                 continue;
             }
             if (mode === 'meaning') {
-                meaningLines.push(line);
-                continue;
+                meaning.push(line);
             }
         }
     }
 
     return {
-        verseDev: script === 'devanagari' ? verseLines.join("\n") : '',
-        splitDev: script === 'devanagari' ? splitLines.join("\n") : '',
-        verseTrans: script !== 'devanagari' ? verseLines.join("\n") : '',
-        splitTrans: script !== 'devanagari' ? splitLines.join("\n") : '',
-        meaning: meaningLines.join("\n")
+        verseDev: script === 'devanagari' ? verse.join("\n") : '',
+        splitDev: script === 'devanagari' ? split.join("\n") : '',
+
+        verseTrans: script !== 'devanagari' ? verse.join("\n") : '',
+        splitTrans: script !== 'devanagari' ? split.join("\n") : '',
+
+        meaning: meaning.join("\n")
     };
 }
               /*** VTT loader ***/
