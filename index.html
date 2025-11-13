@@ -1157,7 +1157,7 @@
             
                 cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
             
-                showTranslit1 = translitState === 'english' || translitState === 'malayalam';
+                showTranslit = translitState === 'english' || translitState === 'malayalam';
             
                 const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
                 if (cues.length > 0) updateSubtitle(idx);
