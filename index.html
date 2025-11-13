@@ -345,6 +345,19 @@ body.light-theme button:hover {
   width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 6px 14px rgba(255,45,85,0.22);
 }
 
+/* === FIX: ensure A− / A+ font-size buttons follow theme text color === */
+.font-size-controls button {
+  color: var(--text-primary) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  background: transparent !important;
+}
+
+body.light-theme .font-size-controls button {
+  color: var(--text-primary) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+
+
 /* hide scrollbar (kept) */
 ::-webkit-scrollbar{ display:none; }
 
@@ -1377,9 +1390,12 @@ function applyTheme(themeName) {
   });
 
   // ---------------- 3️⃣ Buttons, icons, labels ----------------
-  document.querySelectorAll('button, button i, #audioControls i, .btn-label-small').forEach(el => {
-    el.style.color = vars.text;
-  });
+  document.querySelectorAll(
+  'button, button i, #audioControls i, .btn-label-small, #fontSmaller, #fontLarger'
+).forEach(el => {
+  el.style.color = vars.text;
+});
+
 
   // Main UI text elements
   const textElements = [
@@ -1423,6 +1439,14 @@ function applyTheme(themeName) {
   const mode = document.body.classList.contains('light-theme') ? 'light' : 'dark';
   adjustTextContrastForTheme(vars, mode);
   updateToggleColors();
+  const smallerBtn = document.getElementById('fontSmaller');
+const largerBtn = document.getElementById('fontLarger');
+if (smallerBtn && largerBtn) {
+  smallerBtn.style.color = vars.text;
+  largerBtn.style.color = vars.text;
+  smallerBtn.style.borderColor = vars.text === '#0b0b0b' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.08)';
+  largerBtn.style.borderColor = smallerBtn.style.borderColor;
+}
 }
 
 function applyMode(mode) {
