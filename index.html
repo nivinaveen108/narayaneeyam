@@ -827,11 +827,14 @@ function emptyResult() {
     verseRaw = parsed.verseEnglish || parsed.verseTrans || "";
     splitRaw = parsed.splitEnglish || parsed.splitTrans || "";
   } 
-  else if (showTranslit && translitState === "malayalam") {
+else if (showTranslit && translitState === "malayalam") {
     // ---------------- MALAYALAM MODE ----------------
-    verseRaw = parsed.verseMalayalam || parsed.verseTransMalayalam || "";
-    splitRaw = parsed.splitMalayalam || parsed.splitTransMalayalam || "";
-  }
+    verseRaw = parsed.verseMalayalam || "";
+    splitRaw = parsed.splitMalayalam || "";
+}
+verseRaw = verseRaw || "";
+splitRaw = splitRaw || "";
+meaningRaw = meaningRaw || "";
 
   // ------------------------------------------------------------------
   // Apply highlighting ONLY to verse
