@@ -1202,7 +1202,7 @@ function emptyResult() {
     if (!cues || cues.length === 0) return;
 
     let idx = currentCueIndex !== -1 ? currentCueIndex : getCueIndexAtTime();
-    console.log(`prevVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
+    console.log(`⬅️ prevVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
 
     // Move to previous cue if possible
     if (idx > 0) {
@@ -1214,16 +1214,22 @@ function emptyResult() {
     if (currentDashakam > 1) {
         const prevD = String(currentDashakam - 1).padStart(3, '0');
         const wasPlaying = !audio.paused && !audio.ended;
-        console.log(`⬅️ prevVerse: end of dashakam ${currentDashakam}, loading previous ${prevD}`);
-        await loadDashakam(prevD, wasPlaying);
+        console.log(`⬅️ prevVerse: start of dashakam ${currentDashakam}, loading previous ${prevD}`);
+
+        // Load previous Dashakam cues fully (supports Malayalam)
+        await loadTranslitCues(prevD);
+        currentDashakam -= 1;
 
         if (cues.length > 0) {
-            await jumpToCue(cues.length - 1, wasPlaying); // ✅ await ensures proper sequencing
+            await jumpToCue(cues.length - 1, wasPlaying);
         }
-    } else if (repeatDashakam && cues.length > 0) {
+    }
+    // Repeat Dashakam if enabled
+    else if (repeatDashakam && cues.length > 0) {
         await jumpToCue(cues.length - 1);
     }
 });
+
 
             
               nextVerseBtn.addEventListener('click', async () => {
@@ -1234,58 +1240,83 @@ function emptyResult() {
     let idx = currentCueIndex !== -1 ? currentCueIndex : getCueIndexAtTime();
     console.log(`➡️ nextVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
 
+    // Move to next cue within the current Dashakam
     if (idx < cues.length - 1) {
+        // Wait until audio can play if not ready
         if (audio.readyState < 2) {
             await new Promise(resolve => {
                 const onCan = () => { audio.removeEventListener('canplay', onCan); resolve(); };
                 audio.addEventListener('canplay', onCan);
-                setTimeout(resolve, 700);
+                setTimeout(resolve, 700); // fallback
             });
         }
 
         console.log(`⏭️ nextVerse: moving to next cue ${idx + 1}`);
-        await jumpToCue(idx + 1, true); // ✅ remove setTimeout
+        await jumpToCue(idx + 1, true);
         return;
     }
 
+    // End of current Dashakam — move to next Dashakam
     if (currentDashakam < totalDashakams) {
         const nextD = String(currentDashakam + 1).padStart(3, '0');
         const wasPlaying = !audio.paused && !audio.ended;
         console.log(`➡️ nextVerse: end of dashakam ${currentDashakam}, loading ${nextD}`);
-        await loadDashakam(nextD, wasPlaying);
+
+        // Load next Dashakam cues fully (supports Malayalam)
+        await loadTranslitCues(nextD);
+        currentDashakam += 1;
 
         if (cues.length > 0) {
-            await jumpToCue(0, wasPlaying); // ✅ remove setTimeout
+            await jumpToCue(0, wasPlaying);
         }
-    } else if (repeatDashakam && cues.length > 0) {
+    }
+    // Repeat Dashakam if enabled
+    else if (repeatDashakam && cues.length > 0) {
         console.log(`🔁 Repeating Dashakam`);
-        await jumpToCue(0, true); // ✅ make it await
+        await jumpToCue(0, true);
     }
 });
 
+
             
               /*** Prev/Next Dashakam UI buttons ***/
-              prevDashakamBtn.addEventListener('click', () => {
-                if (currentDashakam > 1) loadDashakam(String(currentDashakam - 1).padStart(3, '0'));
-              });
-              nextDashakamBtn.addEventListener('click', () => {
-                if (currentDashakam < totalDashakams) loadDashakam(String(currentDashakam + 1).padStart(3, '0'));
-              });
-            
-            /*** ±10 Dashakam UI buttons ***/
-            minus10DashakamBtn.addEventListener('click', () => {
-              if (currentDashakam > 1) {
-                const target = Math.max(1, currentDashakam - 10);
-                loadDashakam(String(target).padStart(3, '0'));
-              }
-            });
-            
-            plus10DashakamBtn.addEventListener('click', () => {
-              if (currentDashakam < totalDashakams) {
-                const target = Math.min(totalDashakams, currentDashakam + 10);
-                loadDashakam(String(target).padStart(3, '0'));
-              }
-            });
+prevDashakamBtn.addEventListener('click', async () => {
+    if (currentDashakam > 1) {
+        const prevD = String(currentDashakam - 1).padStart(3, '0');
+        currentDashakam -= 1;
+        await loadTranslitCues(prevD);
+        if (cues.length > 0) await jumpToCue(0);
+    }
+});
+
+nextDashakamBtn.addEventListener('click', async () => {
+    if (currentDashakam < totalDashakams) {
+        const nextD = String(currentDashakam + 1).padStart(3, '0');
+        currentDashakam += 1;
+        await loadTranslitCues(nextD);
+        if (cues.length > 0) await jumpToCue(0);
+    }
+});
+
+/*** ±10 Dashakam UI buttons ***/
+minus10DashakamBtn.addEventListener('click', async () => {
+    if (currentDashakam > 1) {
+        const target = Math.max(1, currentDashakam - 10);
+        currentDashakam = target;
+        await loadTranslitCues(String(target).padStart(3, '0'));
+        if (cues.length > 0) await jumpToCue(0);
+    }
+});
+
+plus10DashakamBtn.addEventListener('click', async () => {
+    if (currentDashakam < totalDashakams) {
+        const target = Math.min(totalDashakams, currentDashakam + 10);
+        currentDashakam = target;
+        await loadTranslitCues(String(target).padStart(3, '0'));
+        if (cues.length > 0) await jumpToCue(0);
+    }
+});
+
             
               /*** Repeat toggles (mutually exclusive, with save + visual feedback) ***/
               repeatVerseBtn.addEventListener('click', () => {
@@ -1391,6 +1422,7 @@ function emptyResult() {
             
                 const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
                 if (cues.length > 0) updateSubtitle(idx);
+                return cues;  
             }
             
             // Initial load
