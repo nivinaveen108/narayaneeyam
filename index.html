@@ -604,11 +604,6 @@ function parseCueText(text) {
   return { verseDev, splitDev, verseTrans, splitTrans, meaning };
 }
 
-// ASCII checker
-function isAscii(s) {
-  return /^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(s);
-}
-
             
               /*** VTT loader ***/
               async function loadVTT(url) {
