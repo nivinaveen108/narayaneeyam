@@ -695,47 +695,49 @@ function parseMalayalam(lines) {
 // 3) ENGLISH TRANSLITERATION
 // ----------------------------------------------------------
 function parseEnglish(lines) {
+  const verseEndRegex = /\|\|\s*\d+\s*\|\|/;   // example:  || 1 ||
+
   const verseLines = [];
   const splitLines = [];
   const meaningLines = [];
 
-  let foundSplit = false;
+  let foundVerseEnd = false;
   let foundMeaning = false;
 
   for (const line of lines) {
-    if (!foundSplit) {
-      // detect split line
+
+    // 1) VERSE SECTION: before "|| n ||"
+    if (!foundVerseEnd) {
+      verseLines.push(line);
+      if (verseEndRegex.test(line)) {
+        foundVerseEnd = true;
+      }
+      continue;
+    }
+
+    // 2) SPLIT-WORD SECTION: after verse end, until real English meaning begins
+    if (!foundMeaning) {
+      // split lines always have a KEY + gap + MEANING
+      // detected by tab or more than one space
       if (/\t/.test(line) || / {2,}/.test(line)) {
-        foundSplit = true;
         splitLines.push(line);
       } else {
-        verseLines.push(line);
-      }
-
-    } else if (!foundMeaning) {
-      // detect meaning line
-      if (/^[A-Za-z]/.test(line) && !/\t/.test(line) && !/ {2,}/.test(line)) {
+        // first plain English sentence = meaning starts
         foundMeaning = true;
         meaningLines.push(line);
-      } else {
-        splitLines.push(line);
       }
-
-    } else {
-      meaningLines.push(line);
+      continue;
     }
+
+    // 3) MEANING SECTION
+    meaningLines.push(line);
   }
 
   return {
     verseDev: "",
     splitDev: "",
-
-    verseMalayalam: "",
-    splitMalayalam: "",
-
-    verseEnglish: verseLines.join("\n"),
-    splitEnglish: splitLines.join("\n"),
-
+    verseTrans: verseLines.join("\n"),
+    splitTrans: splitLines.join("\n"),
     meaning: meaningLines.join("\n")
   };
 }
