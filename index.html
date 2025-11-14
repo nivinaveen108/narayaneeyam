@@ -1528,7 +1528,6 @@ const parsed = parseCueText(cues[index].text, script);
               [verseDiv, splitWordsDiv, meaningDiv].forEach(el => {
                 if (!el) return;
                 el.style.color = textColor;
-                el.style.backgroundColor = bgColor;
               });
             }
             
@@ -1563,7 +1562,6 @@ const parsed = parseCueText(cues[index].text, script);
                 if (el) el.style.color = textColor;
               });
             
-              document.body.style.backgroundColor = bg;
               updateToggleColors();
             }
             
