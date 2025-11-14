@@ -528,7 +528,7 @@ body.light-theme #meaning {
               let cues = [];
               let currentCueIndex = -1;
               let currentDashakam = 1;
-              let showTranslit = false;
+              let showTranslit = true;
               let speedOptions = [1, 1.25, 1.5, 2];
               let speedIndex = 0;
               let speedTimeout = null;
@@ -1196,8 +1196,7 @@ function parseCueText(text) {
             
              // Only declare translitState once
             let translitState = 'english';
-            let showTranslit1 = true; // assign, do not redeclare elsewhere
-            
+                        
             async function loadTranslitCues(dashNum = null) {
                 dashNum = dashNum || String(currentDashakam).padStart(3, '0');
                 let vttFolder = 'vtt_fixed_time_transliterated';
