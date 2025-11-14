@@ -1165,7 +1165,12 @@ updateSubtitle(index);
                 const idx = cues.findIndex(c => timeToSeconds(c.start) > nowSec);
                 return idx > 0 ? idx - 1 : 0;
               }
-            
+            function refreshSubtitleOverlay() {
+    const container = document.getElementById('subtitleContainer');
+    if (!container) return;
+    container.classList.remove('show-overlay');
+    setTimeout(() => container.classList.add('show-overlay'), 50);
+}
               /*** SINGLE Timeupdate Handler (fixed repeat + next dashakam) ***/
               audio.addEventListener("timeupdate", async () => {
                 if (!cues || isSeeking) return;
@@ -1192,26 +1197,34 @@ updateSubtitle(index);
                 }
             
                 // End of dashakam → load next
-                if (
-                  cues.length > 0 &&
-                  currentCueIndex === cues.length - 1 &&
-                  now >= timeToSeconds(cues[cues.length - 1].end) - 0.25
-                ) {
-                  if (repeatDashakam) {
-                    console.log("🔁 Repeating Dashakam");
-                    await jumpToCue(0, true);
-                    return;
-                  }
-                  if (currentDashakam < totalDashakams) {
-                    const nextD = String(currentDashakam + 1).padStart(3, '0');
-                    console.log(`➡️ Moving to next Dashakam ${nextD}`);
-                    await loadDashakam(nextD, true);
-                    if (cues.length > 0) await jumpToCue(0, true);
-                  } else {
-                    console.log("🛑 End of final Dashakam");
-                    audio.pause();
-                  }
-                }
+if (
+  cues.length > 0 &&
+  currentCueIndex === cues.length - 1 &&
+  now >= timeToSeconds(cues[cues.length - 1].end) - 0.25
+) {
+    if (repeatDashakam) {
+        console.log("🔁 Repeating Dashakam");
+        await jumpToCue(0, true);
+        return;
+    }
+    if (currentDashakam < totalDashakams) {
+        const nextD = String(currentDashakam + 1).padStart(3, '0');
+        console.log(`➡️ Moving to next Dashakam ${nextD}`);
+        await loadDashakam(nextD, true);
+        if (cues.length > 0) {
+            await jumpToCue(0, true);
+
+            // --- FIX: force overlay refresh 3 times ---
+            refreshSubtitleOverlay();
+            refreshSubtitleOverlay();
+            refreshSubtitleOverlay();
+        }
+    } else {
+        console.log("🛑 End of final Dashakam");
+        audio.pause();
+    }
+}
+
               });
             
               /*** Prev / Next Verse handlers ***/
