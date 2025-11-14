@@ -674,20 +674,22 @@ body.light-theme #meaning {
   const script = showTranslit ? translitState || 'english' : 'devanagari';
 
   // --- Explicit language handling ---
-  let verseRaw = '';
-  let splitRaw = '';
-  let meaningRaw = parsed.meaning || '';
+  let verseRaw, splitRaw;
 
   if (script === 'devanagari') {
+    // Keep existing Devanagari exactly as-is
     verseRaw = parsed.verseDev;
     splitRaw = parsed.splitDev;
   } else if (script === 'english') {
     verseRaw = parsed.verseTrans;
     splitRaw = parsed.splitTrans;
   } else if (script === 'malayalam') {
-    verseRaw = parsed.verseTrans; // Malayalam uses transliterated lines for verse
-    splitRaw = parsed.splitTrans; // split for Malayalam
+    // Malayalam uses transliterated content for both verse and split
+    verseRaw = parsed.verseTrans;
+    splitRaw = parsed.splitTrans;
   }
+
+  const meaningRaw = parsed.meaning || '';
 
   // --- Always normalize and re-highlight freshly ---
   const verseText = highlightMahapraana(String(verseRaw).normalize('NFC'), script);
@@ -718,6 +720,7 @@ body.light-theme #meaning {
     infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3, '0')}${title ? " — " + title : ""} — Verse ${verseNum}`;
   }
 }
+
 
             
             // ---------------- Robust Mahāprāṇa highlighting ---------------- 
