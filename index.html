@@ -673,33 +673,26 @@ body.light-theme #meaning {
   // Determine active script
   const script = showTranslit ? translitState || 'english' : 'devanagari';
 
-  // --- Explicit language handling ---
   let verseRaw, splitRaw;
 
   if (script === 'devanagari') {
-    // Keep existing Devanagari exactly as-is
+    // === KEEP ORIGINAL DEVANAGARI LOGIC ===
     verseRaw = parsed.verseDev;
     splitRaw = parsed.splitDev;
-  } else if (script === 'english') {
-    verseRaw = parsed.verseTrans;
-    splitRaw = parsed.splitTrans;
-  } else if (script === 'malayalam') {
-    // Malayalam uses transliterated content for both verse and split
+  } else if (script === 'english' || script === 'malayalam') {
+    // English and Malayalam use transliterated content
     verseRaw = parsed.verseTrans;
     splitRaw = parsed.splitTrans;
   }
 
+  // No changes to meaning
   const meaningRaw = parsed.meaning || '';
 
-  // --- Always normalize and re-highlight freshly ---
+  // Highlight only Mahāprāṇa in verse
   const verseText = highlightMahapraana(String(verseRaw).normalize('NFC'), script);
-  const splitText = String(splitRaw).normalize('NFC'); // no highlighting here
+  const splitText = String(splitRaw).normalize('NFC');
 
-  // Force DOM re-render to ensure update
-  verseDiv.innerHTML = '';
-  splitWordsDiv.innerHTML = '';
-  meaningDiv.innerHTML = '';
-
+  // Update DOM
   verseDiv.innerHTML = nl2br(verseText);
   splitWordsDiv.innerHTML = nl2br(splitText);
   meaningDiv.innerHTML = nl2br(meaningRaw);
@@ -711,15 +704,14 @@ body.light-theme #meaning {
   if (infoEl) {
     const verseNum = currentCueIndex + 1;
     let title = "";
-
     if (dashakamTitles && dashakamTitles.length) {
       const dashakamEntry = dashakamTitles.find(d => d.number === currentDashakam);
       if (dashakamEntry) title = dashakamEntry.english_title || "";
     }
-
     infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3, '0')}${title ? " — " + title : ""} — Verse ${verseNum}`;
   }
 }
+
 
 
             
