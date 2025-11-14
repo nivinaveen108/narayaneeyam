@@ -1198,63 +1198,71 @@ function emptyResult() {
               });
             
               /*** Prev / Next Verse handlers ***/
-              prevVerseBtn.addEventListener('click', async () => {
-                if (!cues || cues.length === 0) return;
-                let idx = currentCueIndex !== -1 ? currentCueIndex : getCueIndexAtTime();
-                console.log(`prevVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
-                if (idx > 0) {
-                  await jumpToCue(idx - 1);
-                  return;
-                }
-                if (currentDashakam > 1) {
-                  const prevD = String(currentDashakam - 1).padStart(3, '0');
-                  const wasPlaying = !audio.paused && !audio.ended;
-                  await loadDashakam(prevD, wasPlaying);
-                  if (cues.length > 0) await jumpToCue(cues.length - 1, wasPlaying);
-                } else if (repeatDashakam && cues.length > 0) {
-                  await jumpToCue(cues.length - 1);
-                }
-              });
+             prevVerseBtn.addEventListener('click', async () => {
+    if (!cues || cues.length === 0) return;
+
+    let idx = currentCueIndex !== -1 ? currentCueIndex : getCueIndexAtTime();
+    console.log(`prevVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
+
+    // Move to previous cue if possible
+    if (idx > 0) {
+        await jumpToCue(idx - 1);
+        return;
+    }
+
+    // Move to previous Dashakam if available
+    if (currentDashakam > 1) {
+        const prevD = String(currentDashakam - 1).padStart(3, '0');
+        const wasPlaying = !audio.paused && !audio.ended;
+        console.log(`⬅️ prevVerse: end of dashakam ${currentDashakam}, loading previous ${prevD}`);
+        await loadDashakam(prevD, wasPlaying);
+
+        if (cues.length > 0) {
+            await jumpToCue(cues.length - 1, wasPlaying); // ✅ await ensures proper sequencing
+        }
+    } else if (repeatDashakam && cues.length > 0) {
+        await jumpToCue(cues.length - 1);
+    }
+});
+
             
               nextVerseBtn.addEventListener('click', async () => {
-                trace('nextVerseBtn.click', { currentCueIndex, audioTime: audio.currentTime.toFixed(3) });
-            
-                if (!cues || cues.length === 0) return;
-            
-                let idx = currentCueIndex !== -1 ? currentCueIndex : getCueIndexAtTime();
-                console.log(`➡️ nextVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
-            
-                if (idx < cues.length - 1) {
-                  // ensure can seek quickly
-                  if (audio.readyState < 2) {
-                    await new Promise(resolve => {
-                      const onCan = () => { audio.removeEventListener('canplay', onCan); resolve(); };
-                      audio.addEventListener('canplay', onCan);
-                      setTimeout(resolve, 700); // fallback
-                    });
-                  }
-            
-                  // small delay and then jump
-                  console.log(`⏭️ nextVerse: moving to next cue ${idx + 1}`);
-                  setTimeout(() => jumpToCue(idx + 1, true), 150);
-                  return;
-                }
-            
-                // move to next dashakam
-                if (currentDashakam < totalDashakams) {
-                  const nextD = String(currentDashakam + 1).padStart(3, '0');
-                  const wasPlaying = !audio.paused && !audio.ended;
-                  console.log(`➡️ nextVerse: end of dashakam ${currentDashakam}, loading ${nextD}`);
-                  await loadDashakam(nextD, wasPlaying);
-            
-                  if (cues.length > 0) {
-                    setTimeout(() => jumpToCue(0, wasPlaying), 250);
-                  }
-                } else if (repeatDashakam && cues.length > 0) {
-                  console.log(`🔁 Repeating Dashakam`);
-                  jumpToCue(0);
-                }
-              });
+    trace('nextVerseBtn.click', { currentCueIndex, audioTime: audio.currentTime.toFixed(3) });
+
+    if (!cues || cues.length === 0) return;
+
+    let idx = currentCueIndex !== -1 ? currentCueIndex : getCueIndexAtTime();
+    console.log(`➡️ nextVerse clicked, currentCueIndex=${currentCueIndex}, computedIdx=${idx}`);
+
+    if (idx < cues.length - 1) {
+        if (audio.readyState < 2) {
+            await new Promise(resolve => {
+                const onCan = () => { audio.removeEventListener('canplay', onCan); resolve(); };
+                audio.addEventListener('canplay', onCan);
+                setTimeout(resolve, 700);
+            });
+        }
+
+        console.log(`⏭️ nextVerse: moving to next cue ${idx + 1}`);
+        await jumpToCue(idx + 1, true); // ✅ remove setTimeout
+        return;
+    }
+
+    if (currentDashakam < totalDashakams) {
+        const nextD = String(currentDashakam + 1).padStart(3, '0');
+        const wasPlaying = !audio.paused && !audio.ended;
+        console.log(`➡️ nextVerse: end of dashakam ${currentDashakam}, loading ${nextD}`);
+        await loadDashakam(nextD, wasPlaying);
+
+        if (cues.length > 0) {
+            await jumpToCue(0, wasPlaying); // ✅ remove setTimeout
+        }
+    } else if (repeatDashakam && cues.length > 0) {
+        console.log(`🔁 Repeating Dashakam`);
+        await jumpToCue(0, true); // ✅ make it await
+    }
+});
+
             
               /*** Prev/Next Dashakam UI buttons ***/
               prevDashakamBtn.addEventListener('click', () => {
