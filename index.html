@@ -1044,11 +1044,10 @@ meaningRaw = meaningRaw || "";
                 currentCueIndex = -1;
                 verseDiv.innerHTML = splitWordsDiv.innerHTML = meaningDiv.innerHTML = "";
             
-                if (cues.length > 0) {
-                  updateSubtitle(0);
-                  updateCurrentInfo();
+               if (cues.length > 0) {
+               await jumpToCue(0, false);  // ensures proper Malayalam/English rendering
                 }
-            
+
                 highlightGoTo();
                 playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
             
