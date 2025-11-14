@@ -574,35 +574,48 @@ body.light-theme #meaning {
 /*** Cue parsing ***/
 function parseCueText(text) {
   const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
 
-  const verseLines = [];
-  const malayalamLines = [];
-  const englishLines = [];
+  const verseLines = [];     // Devanagari always goes here
+  const malayalamLines = []; // Malayalam → split words
+  const englishLines = [];   // English/ASCII → meaning
+
+  let foundVerseEnd = false;
+  let foundMeaningStart = false;
 
   for (const line of lines) {
-    if (/[\u0900-\u097F]/.test(line)) {
-      // Devanagari
+    if (!foundVerseEnd) {
+      // Devanagari logic stays exactly as before
       verseLines.push(line);
-    } else if (/[\u0D00-\u0D7F]/.test(line)) {
-      // Malayalam
-      malayalamLines.push(line);
-    } else if (isAscii(line)) {
-      // English / Transliteration
-      englishLines.push(line);
+      if (verseEndRegex.test(line)) foundVerseEnd = true;
+      else if (isAscii(line)) {
+        // fallback: if no Devanagari marker, first ASCII line marks end of verse
+        foundVerseEnd = true;
+        englishLines.push(line);
+      }
+    } else if (!foundMeaningStart) {
+      if (isAscii(line)) {
+        foundMeaningStart = true;
+        englishLines.push(line);
+      } else if (/[\u0D00-\u0D7F]/.test(line)) {
+        malayalamLines.push(line);
+      } else {
+        malayalamLines.push(line);
+      }
     } else {
-      // fallback → add to Malayalam
-      malayalamLines.push(line);
+      englishLines.push(line);
     }
   }
 
-  const verseDev = verseLines.join('\n');
-  const splitDev = malayalamLines.join('\n');
-  const verseTrans = englishLines.join('\n') || verseDev;
-  const splitTrans = englishLines.join('\n') || splitDev;
-  const meaning = englishLines.join('\n') || '';
+  const verseDev = verseLines.join('\n');           // Devanagari verse (preserves original breaks)
+  const splitDev = malayalamLines.join('\n');       // Malayalam split words
+  const verseTrans = englishLines.join('\n') || verseDev; // fallback to verse if no translit
+  const splitTrans = englishLines.join('\n') || splitDev; // fallback to split if no translit
+  const meaning = englishLines.join('\n') || '';    // English meaning
 
   return { verseDev, splitDev, verseTrans, splitTrans, meaning };
 }
+
 
             
               /*** VTT loader ***/
