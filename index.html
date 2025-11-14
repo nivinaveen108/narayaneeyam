@@ -572,29 +572,49 @@ body.light-theme #meaning {
             }
             
               /*** Cue parsing ***/
-              function parseCueText(text) {
-                const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-                const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
-                let verseLines = [], splitLines = [], asciiLines = [];
-                let foundVerseEnd = false, foundMeaningStart = false;
-                for (const line of lines) {
-                  if (!foundVerseEnd) {
-                    verseLines.push(line);
-                    if (verseEndRegex.test(line)) foundVerseEnd = true;
-                  } else if (!foundMeaningStart) {
-                    if (isAscii(line)) { foundMeaningStart = true; asciiLines.push(line); }
-                    else splitLines.push(line);
-                  } else {
-                    asciiLines.push(line);
-                  }
-                }
-                const verseDev = verseLines.join('\n');
-                const splitDev = splitLines.join('\n');
-                const verseTrans = asciiLines.join('\n') || verseDev;
-                const splitTrans = asciiLines.join('\n') || splitDev;
-                const meaning = asciiLines.join('\n') || '';
-                return { verseDev, splitDev, verseTrans, splitTrans, meaning };
-              }
+function parseCueText(text) {
+  const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+
+  const verseLines = [];     // Devanagari always goes here
+  const malayalamLines = []; // Malayalam → split words
+  const englishLines = [];   // English/ASCII → meaning
+
+  let foundVerseEnd = false;
+  let foundMeaningStart = false;
+
+  for (const line of lines) {
+    if (!foundVerseEnd) {
+      // Before verse end marker, everything goes to verse
+      verseLines.push(line);
+      if (verseEndRegex.test(line)) foundVerseEnd = true;
+    } else if (!foundMeaningStart) {
+      if (isAscii(line)) {
+        // First ASCII line marks beginning of meaning
+        foundMeaningStart = true;
+        englishLines.push(line);
+      } else if (/[\u0D00-\u0D7F]/.test(line)) {
+        // Malayalam lines → split words
+        malayalamLines.push(line);
+      } else {
+        // Any unexpected line → fallback to split (Malayalam)
+        malayalamLines.push(line);
+      }
+    } else {
+      // After meaning starts, everything goes to meaning (ASCII/English)
+      englishLines.push(line);
+    }
+  }
+
+  const verseDev = verseLines.join('\n');           // Devanagari verse
+  const splitDev = malayalamLines.join('\n');       // Malayalam split words
+  const verseTrans = englishLines.join('\n') || verseDev; // translit verse fallback
+  const splitTrans = englishLines.join('\n') || splitDev; // translit split fallback
+  const meaning = englishLines.join('\n') || '';    // English meaning
+
+  return { verseDev, splitDev, verseTrans, splitTrans, meaning };
+}
+
             
               /*** VTT loader ***/
               async function loadVTT(url) {
