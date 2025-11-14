@@ -586,7 +586,7 @@ function parseCueText(text) {
 
   for (const line of lines) {
     if (!foundVerseEnd) {
-      // Keep Devanagari logic untouched
+      // Devanagari logic untouched
       verseLines.push(line);
       if (verseEndRegex.test(line)) foundVerseEnd = true;
       else if (isAscii(line)) foundVerseEnd = true; // fallback
@@ -611,14 +611,15 @@ function parseCueText(text) {
     }
   }
 
-  const verseDev = verseLines.join('\n');           // Devanagari
-  const splitDev = malayalamLines.join('\n');       // Malayalam
-  const verseTrans = translitLines.length ? translitLines.join('\n') : verseDev;  // word-by-word
-  const splitTrans = translitLines.length ? translitLines.join('\n') : splitDev;  // fallback
-  const meaning = meaningLines.join('\n') || '';    // final English meaning
+  const verseDev = verseLines.join('\n');             // Devanagari
+  const splitDev = malayalamLines.join('\n');         // Malayalam
+  const verseTrans = translitLines.join('\n') || '';  // Only word-by-word transliteration
+  const splitTrans = translitLines.join('\n') || '';  // Same as above
+  const meaning = meaningLines.join('\n') || '';      // Only final English meaning
 
   return { verseDev, splitDev, verseTrans, splitTrans, meaning };
 }
+
 
 
             
