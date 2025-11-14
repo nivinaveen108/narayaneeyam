@@ -29,6 +29,9 @@
          --glass-border: rgba(255,255,255,0.06);
          --control-bg: rgba(255,255,255,0.03);
          --is-dark: 1; /* 1 = dark mode, 0 = light mode */
+ --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
+    --mahapraana-color: #ff7faa;    /* default dark mode color for Mahapraana highlighting */
+
          }
          /* Light theme overrides (applied when body has .light-theme) */
          body.light-theme {
@@ -44,6 +47,8 @@
          --page-bg: linear-gradient(180deg,#fafafa 0%, #f4f4f6 100%);
          --glass-border: rgba(0,0,0,0.06);
          --control-bg: rgba(245,245,247,0.8);
+         --dashakam-color: #d60045;      /* readable version on light bg */
+    	--mahapraana-color: #ff5a7d;
          }
          /* smooth transitions */
          * { box-sizing: border-box; transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease; }
@@ -152,10 +157,16 @@
          .time-left, .time-right{ display:flex; align-items:center; gap:8px; }
          /* navigate rows - identical layout */
          .navigate-row{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
-         .mahapraana {
-         font-weight: bold; /* optional */
-         color: var(--mahapraana-color); /* use JS-set variable */
-         }
+
+/* Mahāprāṇa highlighting */
+.mahapraana {
+    color: var(--mahapraana-color);
+    font-weight: bold;
+    /* optional: subtle shadow for depth */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+}
+
+
          /* Buttons - preserve sizes but restyle visuals */
          button{
          cursor:pointer;
@@ -210,20 +221,22 @@
          .group-select:hover{ background: var(--accent-soft); box-shadow: 0 8px 18px rgba(0,0,0,0.6) inset; }
          /* time info text (unchanged layout) */
          #timeDisplay, 
-         /* Light theme: bold pink, subtle dark outline for readability */
-         body.light-theme #currentInfo {
-         color: #ff2d55;        /* bright pink */
-         font-weight: 800;      /* extra-bold */
-         font-size: 1.0rem;    /* slightly smaller */
-         text-shadow: 1px 1px 2px rgba(0,0,0,0.4); /* subtle shadow for contrast */
-         }
-         /* Dark theme: bold pink, subtle light outline for readability */
-         body:not(.light-theme) #currentInfo {
-         color: #ff2d55;        /* bright pink */
-         font-weight: 800;      /* extra-bold */
-         font-size: 1.0rem;    /* slightly smaller */
-         text-shadow: 1px 1px 2px rgba(255,255,255,0.3); /* subtle highlight for dark bg */
-         }
+
+/* Dashakam title */
+body.light-theme #currentInfo {
+    color: var(--dashakam-color);
+    font-weight: 800;
+    font-size: 1rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+body:not(.light-theme) #currentInfo {
+    color: var(--dashakam-color);
+    font-weight: 800;
+    font-size: 1rem;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
+}
+
          /* SUBTITLE CONTAINER - IMPORTANT: DO NOT CHANGE SIZE/STRUCTURE */
          /* exactly preserve max-width, margin, padding, border, border-radius, etc.  */
          #subtitleContainer{
@@ -309,6 +322,21 @@
          border-color: rgba(255,255,255,0.08) !important;
          background: transparent !important;
          }
+
+body.light-theme #subtitleContainer {
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+body.light-theme #verse,
+body.light-theme #splitWords,
+body.light-theme #meaning {
+    color: #111;
+    text-shadow: none;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
+
+
          body.light-theme .font-size-controls button {
          color: var(--text-primary) !important;
          border-color: rgba(0,0,0,0.1) !important;
@@ -506,7 +534,7 @@
               // seek state flags
               let isSeeking = false;
               let lastSeekTarget = 0;
-            let translitState = 'devanagari';
+            
               /*** Helpers ***/
               const nl2br = s => (s ? s.replace(/\n/g, '<br>') : '');
               const isAscii = s => /^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(s);
@@ -541,128 +569,31 @@
               infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3, '0')} — ${title} — Verse ${verseNum}`;
             }
             
-             /*** Cue parsing ***/
-function parseCueText(text, script = 'devanagari') {
-    const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-
-    const devanagariVerseEnd = /॥\s*[०-९0-9]+\s*॥/;
-    const malayalamVerseEnd = /\.{2}\s*[0-9]+\s*\.{2}/;
-
-    let verseLines = [];
-    let splitLines = [];
-    let meaningLines = [];
-    let mode = 'verse';
-
-    const isASCII = s => /^[\x00-\x7F]+$/.test(s);
-    const hasEnglishWords = s => /[a-zA-Z]/.test(s);
-    const isMalayalam = s => /[\u0D00-\u0D7F]/.test(s);
-
-    let lastDelimiterIndex = -1;
-    if (script === 'malayalam') {
-        for (let i = lines.length - 1; i >= 0; i--) {
-            if (malayalamVerseEnd.test(lines[i])) {
-                lastDelimiterIndex = i;
-                break;
-            }
-        }
-    }
-
-    // Store lengths of transliteration lines for English split detection
-    let splitLineLengths = [];
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (!line) continue;
-
-        // -------------------------
-        // DEVANAGARI
-        // -------------------------
-        if (script === 'devanagari') {
-            if (mode === 'verse') {
-                verseLines.push(line);
-                if (devanagariVerseEnd.test(line)) mode = 'split';
-                continue;
-            }
-            if (mode === 'split') {
-                if (/^[-–—]/.test(line) || /^[A-Za-z]/.test(line)) {
-                    mode = 'meaning';
-                    meaningLines.push(line);
-                } else {
-                    splitLines.push(line);
+              /*** Cue parsing ***/
+              function parseCueText(text) {
+                const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+                const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+                let verseLines = [], splitLines = [], asciiLines = [];
+                let foundVerseEnd = false, foundMeaningStart = false;
+                for (const line of lines) {
+                  if (!foundVerseEnd) {
+                    verseLines.push(line);
+                    if (verseEndRegex.test(line)) foundVerseEnd = true;
+                  } else if (!foundMeaningStart) {
+                    if (isAscii(line)) { foundMeaningStart = true; asciiLines.push(line); }
+                    else splitLines.push(line);
+                  } else {
+                    asciiLines.push(line);
+                  }
                 }
-                continue;
-            }
-            if (mode === 'meaning') {
-                meaningLines.push(line);
-                continue;
-            }
-        }
-
-        // -------------------------
-        // ENGLISH / TRANSLITERATION
-        // -------------------------
-        else if (script === 'english') {
-            if (mode === 'verse') {
-                verseLines.push(line);
-                if (line.includes('||')) mode = 'split';
-                continue;
-            }
-            if (mode === 'split') {
-                const isFullSentence = /^[A-Z]/.test(line); // Capital letter → meaning
-
-                // If line length is similar to a previous transliteration line, keep in split
-                const matchesSplitLength = splitLineLengths.some(len => Math.abs(len - line.length) <= 3);
-
-                if (isFullSentence && !matchesSplitLength) {
-                    mode = 'meaning';
-                    meaningLines.push(line);
-                } else {
-                    splitLines.push(line);
-                    splitLineLengths.push(line.length);
-                }
-                continue;
-            }
-            if (mode === 'meaning') {
-                meaningLines.push(line);
-                continue;
-            }
-        }
-
-        // -------------------------
-        // MALAYALAM
-        // -------------------------
-        else if (script === 'malayalam') {
-            if (mode === 'verse') {
-                verseLines.push(line);
-                if (i === lastDelimiterIndex) mode = 'split';
-                continue;
-            }
-            if (mode === 'split') {
-                const isFullSentence = /^[A-Z\u0D05-\u0D39]/.test(line); // Malayalam sentences may start with vowels/consonants
-
-                if (line.length < 40 && !isFullSentence) {
-                    splitLines.push(line);
-                } else {
-                    mode = 'meaning';
-                    meaningLines.push(line);
-                }
-                continue;
-            }
-            if (mode === 'meaning') {
-                meaningLines.push(line);
-                continue;
-            }
-        }
-    }
-
-    return {
-        verseDev: script === 'devanagari' ? verseLines.join("\n") : '',
-        splitDev: script === 'devanagari' ? splitLines.join("\n") : '',
-        verseTrans: script !== 'devanagari' ? verseLines.join("\n") : '',
-        splitTrans: script !== 'devanagari' ? splitLines.join("\n") : '',
-        meaning: meaningLines.join("\n")
-    };
-}
+                const verseDev = verseLines.join('\n');
+                const splitDev = splitLines.join('\n');
+                const verseTrans = asciiLines.join('\n') || verseDev;
+                const splitTrans = asciiLines.join('\n') || splitDev;
+                const meaning = asciiLines.join('\n') || '';
+                return { verseDev, splitDev, verseTrans, splitTrans, meaning };
+              }
+            
               /*** VTT loader ***/
               async function loadVTT(url) {
                 try {
@@ -711,11 +642,11 @@ function parseCueText(text, script = 'devanagari') {
               if (!cues || index < 0 || index >= cues.length) return;
               currentCueIndex = index;
             
+              const parsed = parseCueText(cues[index].text);
             
-const script = showTranslit ? translitState || 'english' : 'devanagari';
-const parsed = parseCueText(cues[index].text, script);
-
-           
+              // Determine active script
+              const script = showTranslit ? translitState || 'english' : 'devanagari';
+            
               // --- Always normalize and re-highlight freshly ---
               const verseRaw = showTranslit ? parsed.verseTrans : parsed.verseDev;
               const splitRaw = showTranslit ? parsed.splitTrans : parsed.splitDev;
@@ -1242,8 +1173,8 @@ const parsed = parseCueText(cues[index].text, script);
               if (gotoToggle) { gotoToggle.addEventListener('click', () => openGoto(!gotoOpen)); }
             
              // Only declare translitState once
-            
-            // showTranslit = true; // assign, do not redeclare elsewhere
+            let translitState = 'english';
+            let showTranslit1 = true; // assign, do not redeclare elsewhere
             
             async function loadTranslitCues(dashNum = null) {
                 dashNum = dashNum || String(currentDashakam).padStart(3, '0');
@@ -1254,7 +1185,7 @@ const parsed = parseCueText(cues[index].text, script);
             
                 cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
             
-                showTranslit = translitState === 'english' || translitState === 'malayalam';
+                showTranslit1 = translitState === 'english' || translitState === 'malayalam';
             
                 const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
                 if (cues.length > 0) updateSubtitle(idx);
@@ -1324,78 +1255,90 @@ const parsed = parseCueText(cues[index].text, script);
                  Tiny helpers (these are exactly the same you had)
                  ============================ */
             
-            const themes = {
-              dark: {
-                primary: "#1c1c1e",
-                "primary-dark": "#121212",
-                "primary-light": "#2c2c2e",
-                bg: "#000000",
-                text: "#ffffff",
-                highlight: "#ff4d4d" // Mahāprāṇa highlight in dark
-              },
-              light: {
-                primary: "#f2f2f7",
-                "primary-dark": "#d1d1d6",
-                "primary-light": "#ffffff",
-                bg: "#ffffff",
-                text: "#1c1c1e",
-                highlight: "#d12a2a" // Mahāprāṇa highlight in light
-              },
-              pink: {
-                primary: "#ff375f",
-                "primary-dark": "#bf0f3f",
-                "primary-light": "#ff8fa0",
-                bg: "#fff0f2",
-                text: "#3c003c",
-                highlight: "#e6004c"
-              },
-              purple: {
-                primary: "#bf5af2",
-                "primary-dark": "#7321bf",
-                "primary-light": "#dab6f7",
-                bg: "#f7f0ff",
-                text: "#2c004c",
-                highlight: "#8000ff"
-              },
-              blue: {
-                primary: "#0a84ff",
-                "primary-dark": "#0050cc",
-                "primary-light": "#a6d1ff",
-                bg: "#f0f8ff",
-                text: "#003366",
-                highlight: "#0066cc"
-              },
-              orange: {
-                primary: "#ff9500",
-                "primary-dark": "#cc7000",
-                "primary-light": "#ffd49c",
-                bg: "#fff6ed",
-                text: "#663800",
-                highlight: "#ff5500"
-              }
-            };
-            
-            
-            
-            document.querySelectorAll(".theme-dot").forEach(dot => {
-              dot.addEventListener("click", () => {
-                const theme = dot.dataset.theme;
-                const t = themes[theme];
-                if (!t) return;
-            
-                // Apply CSS variables dynamically
-                document.documentElement.style.setProperty("--accent", t.primary);
-                document.documentElement.style.setProperty("--accent-soft", t["primary-light"] + "22"); // subtle alpha
-                document.documentElement.style.setProperty("--page-bg", t.bg);
-                document.documentElement.style.setProperty("--text-primary", t.text);
-                document.documentElement.style.setProperty("--glass-strong", t["primary-dark"] + "b3");
-                document.documentElement.style.setProperty("--glass-soft", t["primary-dark"] + "8c");
-            
-                // Mark active
-                document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
-                dot.classList.add("active");
-              });
-            });
+            // Updated themes with dashakam and mahapraana colors
+const themes = {
+  dark: {
+    primary: "#1c1c1e",
+    "primary-dark": "#121212",
+    "primary-light": "#2c2c2e",
+    bg: "#000000",
+    text: "#ffffff",
+    dashakam: "#ff2d55",       // Dashakam title
+    mahapraana: "#ff4d4d"      // Mahāprāṇa highlight in dark
+  },
+  light: {
+    primary: "#f2f2f7",
+    "primary-dark": "#d1d1d6",
+    "primary-light": "#ffffff",
+    bg: "#ffffff",
+    text: "#1c1c1e",
+    dashakam: "#d12a2a",       // Dashakam title
+    mahapraana: "#ff2d55"      // Force pink for Mahāprāṇa in light
+  },
+  pink: {
+    primary: "#ff375f",
+    "primary-dark": "#bf0f3f",
+    "primary-light": "#ff8fa0",
+    bg: "#fff0f2",
+    text: "#3c003c",
+    dashakam: "#e6004c",
+    mahapraana: "#ff2d55"
+  },
+  purple: {
+    primary: "#bf5af2",
+    "primary-dark": "#7321bf",
+    "primary-light": "#dab6f7",
+    bg: "#f7f0ff",
+    text: "#2c004c",
+    dashakam: "#8000ff",
+    mahapraana: "#ff2d55"      // pink for light readability
+  },
+  blue: {
+    primary: "#0a84ff",
+    "primary-dark": "#0050cc",
+    "primary-light": "#a6d1ff",
+    bg: "#f0f8ff",
+    text: "#003366",
+    dashakam: "#0066cc",
+    mahapraana: "#ff2d55"
+  },
+  orange: {
+    primary: "#ff9500",
+    "primary-dark": "#cc7000",
+    "primary-light": "#ffd49c",
+    bg: "#fff6ed",
+    text: "#663800",
+    dashakam: "#ff5500",
+    mahapraana: "#ff2d55"
+  }
+};
+
+document.querySelectorAll(".theme-dot").forEach(dot => {
+  dot.addEventListener("click", () => {
+    const theme = dot.dataset.theme;
+    const t = themes[theme];
+    if (!t) return;
+
+    // Apply CSS variables dynamically
+    document.documentElement.style.setProperty("--accent", t.primary);
+    document.documentElement.style.setProperty("--accent-soft", t["primary-light"] + "22");
+    document.documentElement.style.setProperty("--page-bg", t.bg);
+    document.documentElement.style.setProperty("--text-primary", t.text);
+    document.documentElement.style.setProperty("--glass-strong", t["primary-dark"] + "b3");
+    document.documentElement.style.setProperty("--glass-soft", t["primary-dark"] + "8c");
+
+    // Dashakam title (theme-specific)
+    document.documentElement.style.setProperty("--dashakam-color", t.dashakam);
+
+    // Mahāprāṇa highlighting: force pink for light mode
+    const mahapraanaColor = document.body.classList.contains("light-theme") ? "#ff2d55" : t.mahapraana;
+    document.documentElement.style.setProperty("--mahapraana-color", mahapraanaColor);
+
+    // Mark active
+    document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
+    dot.classList.add("active");
+  });
+});
             
             function applyTheme(themeName) {
               const vars = themes[themeName];
@@ -1528,6 +1471,7 @@ const parsed = parseCueText(cues[index].text, script);
               [verseDiv, splitWordsDiv, meaningDiv].forEach(el => {
                 if (!el) return;
                 el.style.color = textColor;
+                el.style.backgroundColor = bgColor;
               });
             }
             
@@ -1562,6 +1506,7 @@ const parsed = parseCueText(cues[index].text, script);
                 if (el) el.style.color = textColor;
               });
             
+              document.body.style.backgroundColor = bg;
               updateToggleColors();
             }
             
