@@ -29,9 +29,8 @@
          --glass-border: rgba(255,255,255,0.06);
          --control-bg: rgba(255,255,255,0.03);
          --is-dark: 1; /* 1 = dark mode, 0 = light mode */
-         --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
-         --mahapraana-color: var(--accent);
-    /* default dark mode color for Mahapraana highlighting */
+ --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
+    --mahapraana-color: #ff7faa;    /* default dark mode color for Mahapraana highlighting */
 
          }
          /* Light theme overrides (applied when body has .light-theme) */
@@ -49,8 +48,7 @@
          --glass-border: rgba(0,0,0,0.06);
          --control-bg: rgba(245,245,247,0.8);
          --dashakam-color: #d60045;      /* readable version on light bg */
-    	   --mahapraana-color: var(--accent);
-
+    	--mahapraana-color: #ff5a7d;
          }
          /* smooth transitions */
          * { box-sizing: border-box; transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease; }
@@ -162,7 +160,7 @@
 
 /* Mahāprāṇa highlighting */
 .mahapraana {
-    color: var(--mahapraana-color, var(--accent));
+    color: var(--mahapraana-color);
     font-weight: bold;
     /* optional: subtle shadow for depth */
     text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
@@ -573,61 +571,28 @@ body.light-theme #meaning {
             
               /*** Cue parsing ***/
               function parseCueText(text) {
-  const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
-
-  // ORIGINAL DEVANAGARI LOGIC KEPT INTACT
-  const verseLines = [];
-  
-  // Malayalam → split words
-  const malayalamLines = [];
-  
-  // English → meaning
-  const englishLines = [];
-
-  let foundVerseEnd = false;
-
-  for (const line of lines) {
-    if (!foundVerseEnd) {
-      // Still part of Devanagari verse
-      verseLines.push(line);
-      if (verseEndRegex.test(line)) foundVerseEnd = true;
-    } else {
-      // AFTER DEVANAGARI VERSE END — separate languages
-
-      // Dev line (keep everything as-is, append to verse)
-      if (/[\u0900-\u097F]/.test(line)) {
-        verseLines.push(line);
-      } 
-      // Malayalam line → split words
-      else if (/[\u0D00-\u0D7F]/.test(line)) {
-        malayalamLines.push(line);
-      } 
-      // English/ASCII → meaning
-      else if (/^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(line)) {
-        englishLines.push(line);
-      } 
-      // fallback → treat as Malayalam
-      else {
-        malayalamLines.push(line);
-      }
-    }
-  }
-
-  return {
-    // DEVANAGARI STAYS EXACTLY THE SAME
-    verseDev: verseLines.join('\n'),
-    splitDev: malayalamLines.join('\n'),
-
-    // Transliterated version → verse stays same, split gets Malayalam
-    verseTrans: verseLines.join('\n'),
-    splitTrans: malayalamLines.join('\n'),
-
-    // English meaning
-    meaning: englishLines.join('\n')
-  };
-}
-
+                const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+                const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+                let verseLines = [], splitLines = [], asciiLines = [];
+                let foundVerseEnd = false, foundMeaningStart = false;
+                for (const line of lines) {
+                  if (!foundVerseEnd) {
+                    verseLines.push(line);
+                    if (verseEndRegex.test(line)) foundVerseEnd = true;
+                  } else if (!foundMeaningStart) {
+                    if (isAscii(line)) { foundMeaningStart = true; asciiLines.push(line); }
+                    else splitLines.push(line);
+                  } else {
+                    asciiLines.push(line);
+                  }
+                }
+                const verseDev = verseLines.join('\n');
+                const splitDev = splitLines.join('\n');
+                const verseTrans = asciiLines.join('\n') || verseDev;
+                const splitTrans = asciiLines.join('\n') || splitDev;
+                const meaning = asciiLines.join('\n') || '';
+                return { verseDev, splitDev, verseTrans, splitTrans, meaning };
+              }
             
               /*** VTT loader ***/
               async function loadVTT(url) {
@@ -1385,6 +1350,9 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
               for (const [key, val] of Object.entries(vars)) {
                 root.style.setProperty(`--${key}`, val);
               }
+            
+              // Mahāprāṇa highlight adapts dynamically from theme
+              root.style.setProperty('--mahapraana-color', vars.highlight || vars.primary);
             
               const accent = vars.primary;
             
