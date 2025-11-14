@@ -851,7 +851,7 @@ function emptyResult() {
   verseDiv.innerHTML = nl2br(verseText);
   splitWordsDiv.innerHTML = nl2br(splitText);
   meaningDiv.innerHTML = nl2br(meaningRaw);
-updateCurrentInfo();
+
   showSubtitleOverlay(true);
 
   // ------------------------------------------------------------------
@@ -1101,7 +1101,22 @@ updateCurrentInfo();
             
             // finalize UI state regardless of absolute success
             currentCueIndex = index;
-                      
+            const parts = parseCueText(cue.text);
+            
+            // Determine active script for highlighting (same logic as updateSubtitle)
+            const script = showTranslit ? translitState || 'english' : 'devanagari';
+            
+            // Highlight only the main verse (do NOT highlight split words)
+            const verseRaw = showTranslit ? parts.verseTrans : parts.verseDev;
+            const splitRaw = showTranslit ? parts.splitTrans : parts.splitDev;
+            const verseHtml = highlightMahapraana(String(verseRaw).normalize('NFC'), script);
+            const splitHtml = String(splitRaw || '').normalize('NFC');
+            
+            verseDiv.innerHTML = nl2br(verseHtml);
+            splitWordsDiv.innerHTML = nl2br(splitHtml);
+            meaningDiv.innerHTML = nl2br(parts.meaning || '');
+            updateCurrentInfo();
+            
             
                 // resume play if requested
                 if (keepPlaying) {
@@ -1195,11 +1210,7 @@ updateCurrentInfo();
                   const prevD = String(currentDashakam - 1).padStart(3, '0');
                   const wasPlaying = !audio.paused && !audio.ended;
                   await loadDashakam(prevD, wasPlaying);
-                  if (cues.length > 0) {
-                      await jumpToCue(cues.length - 1, wasPlaying);
-                      updateSubtitle(cues.length - 1);
-                  }
-
+                  if (cues.length > 0) await jumpToCue(cues.length - 1, wasPlaying);
                 } else if (repeatDashakam && cues.length > 0) {
                   await jumpToCue(cues.length - 1);
                 }
@@ -1225,8 +1236,7 @@ updateCurrentInfo();
             
                   // small delay and then jump
                   console.log(`⏭️ nextVerse: moving to next cue ${idx + 1}`);
-                  await jumpToCue(idx + 1, true);
-                  
+                  setTimeout(() => jumpToCue(idx + 1, true), 150);
                   return;
                 }
             
@@ -1238,8 +1248,7 @@ updateCurrentInfo();
                   await loadDashakam(nextD, wasPlaying);
             
                   if (cues.length > 0) {
-                    await jumpToCue(idx + 1, true);
-
+                    setTimeout(() => jumpToCue(0, wasPlaying), 250);
                   }
                 } else if (repeatDashakam && cues.length > 0) {
                   console.log(`🔁 Repeating Dashakam`);
