@@ -593,34 +593,59 @@ function parseCueText(text) {
 // 1) DEVANAGARI
 // ----------------------------------------------------------
 function parseDevanagari(lines) {
-  const verseLines = [];
-  const splitLines = [];
-
   const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+
+  const verseLines = [];      // always Devanagari verse
+  const malayalamLines = [];  // split words (Malayalam section)
+  const englishLines = [];    // meaning (ASCII)
+
   let foundVerseEnd = false;
+  let foundMeaningStart = false;
 
   for (const line of lines) {
+
     if (!foundVerseEnd) {
+      // Before verse end → everything is verse
       verseLines.push(line);
       if (verseEndRegex.test(line)) foundVerseEnd = true;
+
+    } else if (!foundMeaningStart) {
+
+      if (isAscii(line)) {
+        // First ASCII line → meaning starts
+        foundMeaningStart = true;
+        englishLines.push(line);
+
+      } else if (/[\u0D00-\u0D7F]/.test(line)) {
+        // Malayalam → split words
+        malayalamLines.push(line);
+
+      } else {
+        // Unexpected → treat as Malayalam/split
+        malayalamLines.push(line);
+      }
+
     } else {
-      splitLines.push(line);
+      // After meaning starts → everything is meaning
+      englishLines.push(line);
     }
   }
 
   return {
     verseDev: verseLines.join("\n"),
-    splitDev: splitLines.join("\n"),
+    splitDev: malayalamLines.join("\n"),
 
+    // no Malayalam or English verse for Devanagari
     verseMalayalam: "",
     splitMalayalam: "",
 
-    verseEnglish: "",
-    splitEnglish: "",
+    verseEnglish: englishLines.join("\n"),
+    splitEnglish: englishLines.join("\n"),
 
-    meaning: ""
+    meaning: englishLines.join("\n")
   };
 }
+
 
 // ----------------------------------------------------------
 // 2) MALAYALAM
