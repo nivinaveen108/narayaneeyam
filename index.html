@@ -414,6 +414,8 @@ body.light-theme #meaning {
                <button id="repeatDashakamBtn" class="icon-btn" title="Repeat Dashakam" aria-label="Repeat Dashakam">
                <i class="fas fa-infinity"></i>
                </button>
+               
+                  <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div>
             </div>
             <div class="navigate-row">
                <button id="translitToggle">Devanagari</button>
@@ -449,7 +451,6 @@ body.light-theme #meaning {
                   <div id="currentInfo">Dashakam — Verse —</div>
                </div>
                <div class="time-right">
-                  <div id="timeDisplay">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div>
                   <div id="gotoWrapper">
                      <button id="gotoToggle">Go to ▾</button>
                      <div id="gotoPanel" aria-hidden="true">
@@ -832,6 +833,7 @@ else if (showTranslit && translitState === "malayalam") {
     verseRaw = parsed.verseMalayalam || "";
     splitRaw = parsed.splitMalayalam || "";
 }
+
 verseRaw = verseRaw || "";
 splitRaw = splitRaw || "";
 meaningRaw = meaningRaw || "";
@@ -1106,12 +1108,24 @@ meaningRaw = meaningRaw || "";
             currentCueIndex = index;
             const parts = parseCueText(cue.text);
             
-            // Determine active script for highlighting (same logic as updateSubtitle)
-            const script = showTranslit ? translitState || 'english' : 'devanagari';
-            
-            // Highlight only the main verse (do NOT highlight split words)
-            const verseRaw = showTranslit ? parts.verseTrans : parts.verseDev;
-            const splitRaw = showTranslit ? parts.splitTrans : parts.splitDev;
+let verseRaw = "";
+let splitRaw = "";
+let script = "";
+
+if (!showTranslit) {
+    verseRaw = parts.verseDev || "";
+    splitRaw = parts.splitDev || "";
+    script = "devanagari";
+} else if (translitState === "english") {
+    verseRaw = parts.verseTrans || parts.verseEnglish || "";
+    splitRaw = parts.splitTrans || parts.splitEnglish || "";
+    script = "english";
+} else if (translitState === "malayalam") {
+    verseRaw = parts.verseMalayalam || "";
+    splitRaw = parts.splitMalayalam || "";
+    script = "malayalam";
+}
+
             const verseHtml = highlightMahapraana(String(verseRaw).normalize('NFC'), script);
             const splitHtml = String(splitRaw || '').normalize('NFC');
             
