@@ -574,49 +574,53 @@ body.light-theme #meaning {
 /*** Cue parsing ***/
 function parseCueText(text) {
   const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥|…?\s*\.\.\s*[0-9]+\s*\.\./; // Handles Devanagari and Malayalam verse markers
 
-  const verseLines = [];       // Devanagari / main verse
-  const malayalamLines = [];   // Malayalam → split words
-  const englishLines = [];     // English / ASCII → meaning
+  // Match Devanagari verse-end marker (also handles Malayalam markers ".. 1 ..")
+  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥|…?\s*\.\.\s*[0-9]+\s*\.\./;
+
+  const verseLines = [];     // Devanagari / main verse
+  const malayalamLines = []; // Malayalam → split words
+  const englishLines = [];   // English / ASCII → meaning
 
   let foundVerseEnd = false;
   let foundMeaningStart = false;
 
   for (const line of lines) {
     if (!foundVerseEnd) {
-      // Everything before verse-end marker goes to verse (Devanagari / Malayalam)
+      // Before verse-end marker, everything goes to verse
       verseLines.push(line);
-      if (verseEndRegex.test(line)) foundVerseEnd = true;
+      if (verseEndRegex.test(line) || /^[\u0D00-\u0D7F]/.test(line) === false && isAscii(line)) {
+        // If no Devanagari marker but first ASCII line comes, consider verse ended
+        foundVerseEnd = true;
+      }
     } else if (!foundMeaningStart) {
       if (isAscii(line)) {
         // First ASCII line → meaning starts
         foundMeaningStart = true;
         englishLines.push(line);
       } else if (/[\u0D00-\u0D7F]/.test(line)) {
-        // Malayalam lines → split words
+        // Malayalam → split words
         malayalamLines.push(line);
       } else {
-        // Any unexpected line → fallback to split (Malayalam)
+        // fallback → treat as Malayalam split
         malayalamLines.push(line);
       }
     } else {
-      // After meaning starts → everything goes to English meaning
+      // After meaning started → everything goes to English meaning
       englishLines.push(line);
     }
   }
 
-  // Construct outputs
-  const verseDev = verseLines.join('\n');          // Devanagari / main verse
-  const splitDev = malayalamLines.join('\n');      // Malayalam split words
-  const verseTrans = englishLines.join('\n') || verseDev; // Transliteration fallback
-  const splitTrans = englishLines.join('\n') || splitDev; // Transliteration / fallback
-  const meaning = englishLines.join('\n') || '';   // English meaning
+  const verseDev = verseLines.join('\n');
+  const splitDev = malayalamLines.join('\n');
+  const verseTrans = englishLines.join('\n') || verseDev;
+  const splitTrans = englishLines.join('\n') || splitDev;
+  const meaning = englishLines.join('\n') || '';
 
   return { verseDev, splitDev, verseTrans, splitTrans, meaning };
 }
 
-// Helper to detect ASCII / English lines
+// ASCII checker
 function isAscii(s) {
   return /^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(s);
 }
