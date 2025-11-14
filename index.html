@@ -571,26 +571,26 @@ body.light-theme #meaning {
               infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3, '0')} — ${title} — Verse ${verseNum}`;
             }
             
-              /*** Cue parsing ***/
+/*** Cue parsing ***/
 function parseCueText(text) {
   const lines = (text || '').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
+  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥|…?\s*\.\.\s*[0-9]+\s*\.\./; // Handles Devanagari and Malayalam verse markers
 
-  const verseLines = [];     // Devanagari always goes here
-  const malayalamLines = []; // Malayalam → split words
-  const englishLines = [];   // English/ASCII → meaning
+  const verseLines = [];       // Devanagari / main verse
+  const malayalamLines = [];   // Malayalam → split words
+  const englishLines = [];     // English / ASCII → meaning
 
   let foundVerseEnd = false;
   let foundMeaningStart = false;
 
   for (const line of lines) {
     if (!foundVerseEnd) {
-      // Before verse end marker, everything goes to verse
+      // Everything before verse-end marker goes to verse (Devanagari / Malayalam)
       verseLines.push(line);
       if (verseEndRegex.test(line)) foundVerseEnd = true;
     } else if (!foundMeaningStart) {
       if (isAscii(line)) {
-        // First ASCII line marks beginning of meaning
+        // First ASCII line → meaning starts
         foundMeaningStart = true;
         englishLines.push(line);
       } else if (/[\u0D00-\u0D7F]/.test(line)) {
@@ -601,18 +601,24 @@ function parseCueText(text) {
         malayalamLines.push(line);
       }
     } else {
-      // After meaning starts, everything goes to meaning (ASCII/English)
+      // After meaning starts → everything goes to English meaning
       englishLines.push(line);
     }
   }
 
-  const verseDev = verseLines.join('\n');           // Devanagari verse
-  const splitDev = malayalamLines.join('\n');       // Malayalam split words
-  const verseTrans = englishLines.join('\n') || verseDev; // translit verse fallback
-  const splitTrans = englishLines.join('\n') || splitDev; // translit split fallback
-  const meaning = englishLines.join('\n') || '';    // English meaning
+  // Construct outputs
+  const verseDev = verseLines.join('\n');          // Devanagari / main verse
+  const splitDev = malayalamLines.join('\n');      // Malayalam split words
+  const verseTrans = englishLines.join('\n') || verseDev; // Transliteration fallback
+  const splitTrans = englishLines.join('\n') || splitDev; // Transliteration / fallback
+  const meaning = englishLines.join('\n') || '';   // English meaning
 
   return { verseDev, splitDev, verseTrans, splitTrans, meaning };
+}
+
+// Helper to detect ASCII / English lines
+function isAscii(s) {
+  return /^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(s);
 }
 
             
