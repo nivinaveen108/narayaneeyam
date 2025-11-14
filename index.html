@@ -576,41 +576,58 @@ body.light-theme #meaning {
   const lines = (text||'').trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
 
+  // ORIGINAL DEVANAGARI LOGIC KEPT INTACT
   const verseLines = [];
+  
+  // Malayalam → split words
   const malayalamLines = [];
+  
+  // English → meaning
   const englishLines = [];
 
   let foundVerseEnd = false;
 
   for (const line of lines) {
     if (!foundVerseEnd) {
+      // Still part of Devanagari verse
       verseLines.push(line);
       if (verseEndRegex.test(line)) foundVerseEnd = true;
     } else {
+      // AFTER DEVANAGARI VERSE END — separate languages
+
+      // Dev line (keep everything as-is, append to verse)
       if (/[\u0900-\u097F]/.test(line)) {
-        // Devanagari
         verseLines.push(line);
-      } else if (/[\u0D00-\u0D7F]/.test(line)) {
-        // Malayalam
+      } 
+      // Malayalam line → split words
+      else if (/[\u0D00-\u0D7F]/.test(line)) {
         malayalamLines.push(line);
-      } else if (/^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(line)) {
-        // English/ASCII
+      } 
+      // English/ASCII → meaning
+      else if (/^[\x00-\x7F\s.,'"()\-:;!?—–…0-9]+$/.test(line)) {
         englishLines.push(line);
-      } else {
-        // fallback → treat as Malayalam
+      } 
+      // fallback → treat as Malayalam
+      else {
         malayalamLines.push(line);
       }
     }
   }
 
   return {
+    // DEVANAGARI STAYS EXACTLY THE SAME
     verseDev: verseLines.join('\n'),
     splitDev: malayalamLines.join('\n'),
+
+    // Transliterated version → verse stays same, split gets Malayalam
     verseTrans: verseLines.join('\n'),
     splitTrans: malayalamLines.join('\n'),
+
+    // English meaning
     meaning: englishLines.join('\n')
   };
 }
+
             
               /*** VTT loader ***/
               async function loadVTT(url) {
