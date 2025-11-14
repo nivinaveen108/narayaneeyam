@@ -337,6 +337,28 @@ body.light-theme #meaning {
     text-shadow: none;
     -webkit-font-smoothing: subpixel-antialiased;
 }
+.top-button {
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  font-weight:600;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  color: var(--text-primary);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.5) inset;
+  cursor: pointer;
+  margin-left:6px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.top-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.6), 0 0 12px rgba(255,45,85,0.06);
+}
+
+/* Position them neatly at top-left */
+#homeBtn { position: relative; top: 0; left: 0; }
+#vsnBtn  { position: relative; top: 0; left: 0; }
 
 
          body.light-theme .font-size-controls button {
@@ -392,6 +414,10 @@ body.light-theme #meaning {
                <span class="accent-pill" aria-hidden="true"></span>
                <span id="themeModeLabel" style="font-size:.92rem;">Dark</span>
                </button>
+               <!-- Home and VSN buttons -->
+              <button id="homeBtn" class="top-button" title="Go to Home">🏠</button>
+              <button id="vsnBtn" class="top-button" title="Vishnu Sahasranamam"><i class="fas fa-hands-pray"></i>Vishnu Sahasranaamam</button>
+
             </div>
          </div>
          <!-- audio controls - layout completely preserved -->
@@ -1948,6 +1974,15 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
             
             }); // end DOMContentLoaded
          </script>
+         <script>
+document.getElementById("homeBtn").addEventListener("click", () => {
+  window.location.href = "https://www.nivi108.com";
+});
+
+document.getElementById("vsnBtn").addEventListener("click", () => {
+  window.open("https://nivinaveen108.github.io/vsn/", "_blank");
+});
+</script>
       </main>
    </body>
 </html>
