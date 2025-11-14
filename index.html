@@ -415,8 +415,14 @@ body.light-theme #meaning {
                <span id="themeModeLabel" style="font-size:.92rem;">Dark</span>
                </button>
                <!-- Home and VSN buttons -->
-              <button id="homeBtn" class="top-button" title="Go to Home">🏠</button>
+              <!-- <button id="homeBtn" class="top-button" title="Go to Home">🏠</button> -->
               <button id="vsnBtn" class="top-button" title="Vishnu Sahasranamam"><i class="fas fa-hands-pray"></i>Vishnu Sahasranaamam</button>
+              <button id="homeBtn" title="Home">
+                <div class="icon-wrapper">
+                  <i class="fa-solid fa-house"></i>
+                  <span class="icon-text">Home</span>
+                </div>
+              </button>
 
             </div>
          </div>
@@ -1217,7 +1223,14 @@ if (
 
     if (cues.length > 0) {
         await jumpToCue(0, true);  // sets audio
-        updateSubtitle(0);         // forces proper Malayalam/English rendering
+      // --- TRIPLE TOGGLE FIX ---
+      const originalState = showTranslit;
+      for (let i = 0; i < 3; i++) {
+        showTranslit = !showTranslit;
+        updateSubtitle(0);
+      }
+      showTranslit = originalState;  // restore original state
+      updateSubtitle(0);             // final correct render
     }
 }
  else {
