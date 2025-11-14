@@ -1195,7 +1195,7 @@ function parseCueText(text) {
               if (gotoToggle) { gotoToggle.addEventListener('click', () => openGoto(!gotoOpen)); }
             
              // Only declare translitState once
-            let translitState = 'english';
+            let translitState = 'devanagari';
                         
             async function loadTranslitCues(dashNum = null) {
                 dashNum = dashNum || String(currentDashakam).padStart(3, '0');
