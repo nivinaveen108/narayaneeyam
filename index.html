@@ -777,44 +777,73 @@ function emptyResult() {
             }
             /*** Subtitle update (UI only) ***/
             function updateSubtitle(index) {
-              if (!cues || index < 0 || index >= cues.length) return;
-              currentCueIndex = index;
-            
-              const parsed = parseCueText(cues[index].text);
-            
-              // Determine active script
-              const script = showTranslit ? translitState || 'english' : 'devanagari';
-            
-              // --- Always normalize and re-highlight freshly ---
-              const verseRaw = showTranslit ? parsed.verseTrans : parsed.verseDev;
-              const splitRaw = showTranslit ? parsed.splitTrans : parsed.splitDev;
-            
-              const verseText = highlightMahapraana(String(verseRaw).normalize('NFC'), script);
-              const splitText = String(splitRaw).normalize('NFC'); // no highlighting here
-            
-              // Force DOM re-render to ensure update
-              verseDiv.innerHTML = '';
-              splitWordsDiv.innerHTML = '';
-              meaningDiv.innerHTML = '';
-            
-              verseDiv.innerHTML = nl2br(verseText);
-              splitWordsDiv.innerHTML = nl2br(splitText);
-              meaningDiv.innerHTML = nl2br(parsed.meaning || '');
-            
-              showSubtitleOverlay(true);
-            
-              // --- Update Dashakam info ---
-              const infoEl = document.getElementById("currentInfo");
-              if (infoEl) {
-                const verseNum = currentCueIndex + 1;
-                let title = "";
-                if (dashakamTitles && dashakamTitles.length) {
-                  const dashakamEntry = dashakamTitles.find(d => d.number === currentDashakam);
-                  if (dashakamEntry) title = dashakamEntry.english_title || "";
-                }
-                infoEl.textContent = `Dashakam ${String(currentDashakam).padStart(3,'0')}${title ? " — " + title : ""} — Verse ${verseNum}`;
-              }
-            }
+  if (!cues || index < 0 || index >= cues.length) return;
+  currentCueIndex = index;
+
+  const parsed = parseCueText(cues[index].text);
+
+  // ------------------------------------------------------------------
+  // DETERMINE ACTIVE LANGUAGE EXACTLY
+  // ------------------------------------------------------------------
+  let verseRaw = "";
+  let splitRaw = "";
+  let meaningRaw = parsed.meaning || "";
+
+  if (!showTranslit) {
+    // ---------------- DEVANAGARI MODE ----------------
+    verseRaw = parsed.verseDev || "";
+    splitRaw = parsed.splitDev || "";
+  } 
+  else if (showTranslit && translitState === "english") {
+    // ---------------- ENGLISH MODE ----------------
+    verseRaw = parsed.verseEnglish || parsed.verseTrans || "";
+    splitRaw = parsed.splitEnglish || parsed.splitTrans || "";
+  } 
+  else if (showTranslit && translitState === "malayalam") {
+    // ---------------- MALAYALAM MODE ----------------
+    verseRaw = parsed.verseMalayalam || parsed.verseTransMalayalam || "";
+    splitRaw = parsed.splitMalayalam || parsed.splitTransMalayalam || "";
+  }
+
+  // ------------------------------------------------------------------
+  // Apply highlighting ONLY to verse
+  // ------------------------------------------------------------------
+  const lang = !showTranslit
+    ? "devanagari"
+    : translitState === "english"
+      ? "english"
+      : "malayalam";
+
+  const verseText = highlightMahapraana(String(verseRaw).normalize("NFC"), lang);
+  const splitText = String(splitRaw).normalize("NFC");
+
+  // ------------------------------------------------------------------
+  // RENDER
+  // ------------------------------------------------------------------
+  verseDiv.innerHTML = nl2br(verseText);
+  splitWordsDiv.innerHTML = nl2br(splitText);
+  meaningDiv.innerHTML = nl2br(meaningRaw);
+
+  showSubtitleOverlay(true);
+
+  // ------------------------------------------------------------------
+  // Update dashakam header
+  // ------------------------------------------------------------------
+  const infoEl = document.getElementById("currentInfo");
+  if (infoEl) {
+    const verseNum = currentCueIndex + 1;
+    let title = "";
+    if (dashakamTitles?.length) {
+      const d = dashakamTitles.find(x => x.number === currentDashakam);
+      if (d) title = d.english_title || "";
+    }
+    infoEl.textContent =
+      `Dashakam ${String(currentDashakam).padStart(3, "0")}` +
+      (title ? ` — ${title}` : "") +
+      ` — Verse ${verseNum}`;
+  }
+}
+
             
             // ---------------- Robust Mahāprāṇa highlighting ---------------- 
             
