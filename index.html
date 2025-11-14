@@ -1131,34 +1131,9 @@ meaningRaw = meaningRaw || "";
             
             
             // finalize UI state regardless of absolute success
-            currentCueIndex = index;
-            const parts = parseCueText(cue.text);
-            
-let verseRaw = "";
-let splitRaw = "";
-let script = "";
+currentCueIndex = index;
+updateSubtitle(index);
 
-if (!showTranslit) {
-    verseRaw = parts.verseDev || "";
-    splitRaw = parts.splitDev || "";
-    script = "devanagari";
-} else if (translitState === "english") {
-    verseRaw = parts.verseTrans || parts.verseEnglish || "";
-    splitRaw = parts.splitTrans || parts.splitEnglish || "";
-    script = "english";
-} else if (translitState === "malayalam") {
-    verseRaw = parts.verseMalayalam || "";
-    splitRaw = parts.splitMalayalam || "";
-    script = "malayalam";
-}
-
-            const verseHtml = highlightMahapraana(String(verseRaw).normalize('NFC'), script);
-            const splitHtml = String(splitRaw || '').normalize('NFC');
-            
-            verseDiv.innerHTML = nl2br(verseHtml);
-            splitWordsDiv.innerHTML = nl2br(splitHtml);
-            meaningDiv.innerHTML = nl2br(parts.meaning || '');
-            updateCurrentInfo();
             
             
                 // resume play if requested
