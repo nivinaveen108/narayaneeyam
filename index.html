@@ -1045,8 +1045,11 @@ meaningRaw = meaningRaw || "";
                 verseDiv.innerHTML = splitWordsDiv.innerHTML = meaningDiv.innerHTML = "";
             
                if (cues.length > 0) {
-               await jumpToCue(0, false);  // ensures proper Malayalam/English rendering
-                }
+    currentCueIndex = -1;         // reset index
+    await jumpToCue(0, false);    // safely render first verse
+    updateSubtitle(0);            // force full DOM update
+}
+
 
                 highlightGoTo();
                 playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -1208,18 +1211,16 @@ if (
         return;
     }
     if (currentDashakam < totalDashakams) {
-        const nextD = String(currentDashakam + 1).padStart(3, '0');
-        console.log(`➡️ Moving to next Dashakam ${nextD}`);
-        await loadDashakam(nextD, true);
-        if (cues.length > 0) {
-            await jumpToCue(0, true);
+    const nextD = String(currentDashakam + 1).padStart(3, '0');
+    console.log(`➡️ Moving to next Dashakam ${nextD}`);
+    await loadDashakam(nextD, true);
 
-            // --- FIX: force overlay refresh 3 times ---
-            refreshSubtitleOverlay();
-            refreshSubtitleOverlay();
-            refreshSubtitleOverlay();
-        }
-    } else {
+    if (cues.length > 0) {
+        await jumpToCue(0, true);  // sets audio
+        updateSubtitle(0);         // forces proper Malayalam/English rendering
+    }
+}
+ else {
         console.log("🛑 End of final Dashakam");
         audio.pause();
     }
