@@ -29,8 +29,9 @@
          --glass-border: rgba(255,255,255,0.06);
          --control-bg: rgba(255,255,255,0.03);
          --is-dark: 1; /* 1 = dark mode, 0 = light mode */
- --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
-    --mahapraana-color: #ff7faa;    /* default dark mode color for Mahapraana highlighting */
+         --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
+         --mahapraana-color: var(--accent);
+    /* default dark mode color for Mahapraana highlighting */
 
          }
          /* Light theme overrides (applied when body has .light-theme) */
@@ -48,7 +49,8 @@
          --glass-border: rgba(0,0,0,0.06);
          --control-bg: rgba(245,245,247,0.8);
          --dashakam-color: #d60045;      /* readable version on light bg */
-    	--mahapraana-color: #ff5a7d;
+    	   --mahapraana-color: var(--accent);
+
          }
          /* smooth transitions */
          * { box-sizing: border-box; transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .12s ease; }
@@ -160,7 +162,7 @@
 
 /* Mahāprāṇa highlighting */
 .mahapraana {
-    color: var(--mahapraana-color);
+    color: var(--mahapraana-color, var(--accent));
     font-weight: bold;
     /* optional: subtle shadow for depth */
     text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
@@ -1350,9 +1352,6 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
               for (const [key, val] of Object.entries(vars)) {
                 root.style.setProperty(`--${key}`, val);
               }
-            
-              // Mahāprāṇa highlight adapts dynamically from theme
-              root.style.setProperty('--mahapraana-color', vars.highlight || vars.primary);
             
               const accent = vars.primary;
             
