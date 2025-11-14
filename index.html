@@ -579,46 +579,31 @@ function parseCueText(text) {
     .map(l => l.trim())
     .filter(Boolean);
 
-  if (lines.length === 0) {
-    return emptyResult();
-  }
+  if (lines.length === 0) return emptyResult();
 
   const firstContent = lines.find(l => !/^[0-9:.\-> ]+$/.test(l)) || '';
 
-  //
-  // -------------------------------
-  //  LANGUAGE DETECTION
-  // -------------------------------
-  //
-  if (/[\u0900-\u097F]/.test(firstContent)) {
-    return parseDevanagari(lines);
-  } else if (/[\u0D00-\u0D7F]/.test(firstContent)) {
-    return parseMalayalam(lines);
-  } else {
-    return parseEnglish(lines);
-  }
+  // --- LANGUAGE DETECTION ---
+  if (/[\u0900-\u097F]/.test(firstContent)) return parseDevanagari(lines);
+  if (/[\u0D00-\u0D7F]/.test(firstContent)) return parseMalayalam(lines);
+  return parseEnglish(lines);
 }
 
-//
 // ----------------------------------------------------------
-// 1) DEVANAGARI PARSER — ORIGINAL CODE (UNTOUCHED)
+// 1) DEVANAGARI
 // ----------------------------------------------------------
-//
 function parseDevanagari(lines) {
-  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
   const verseLines = [];
   const splitLines = [];
 
+  const verseEndRegex = /॥\s*[०-९0-9]+\s*॥/;
   let foundVerseEnd = false;
 
   for (const line of lines) {
     if (!foundVerseEnd) {
       verseLines.push(line);
-      if (verseEndRegex.test(line)) {
-        foundVerseEnd = true;
-      }
+      if (verseEndRegex.test(line)) foundVerseEnd = true;
     } else {
-      // AFTER verse end → goes to split section (this is how your original worked)
       splitLines.push(line);
     }
   }
@@ -626,23 +611,26 @@ function parseDevanagari(lines) {
   return {
     verseDev: verseLines.join("\n"),
     splitDev: splitLines.join("\n"),
-    verseTrans: "",
-    splitTrans: "",
+
+    verseMalayalam: "",
+    splitMalayalam: "",
+
+    verseEnglish: "",
+    splitEnglish: "",
+
     meaning: ""
   };
 }
 
-//
 // ----------------------------------------------------------
-// 2) MALAYALAM PARSER — CLEAN & SIMPLE
+// 2) MALAYALAM
 // ----------------------------------------------------------
-//
 function parseMalayalam(lines) {
   const verseLines = [];
   const splitLines = [];
   const meaningLines = [];
 
-  const verseEndRegex = /\.\.\s*\d+\s*\.\./; // Malayalam uses ".. 1 .."
+  const verseEndRegex = /\.\.\s*\d+\s*\.\./;
 
   let foundVerseEnd = false;
   let foundMeaning = false;
@@ -651,68 +639,78 @@ function parseMalayalam(lines) {
     if (!foundVerseEnd) {
       verseLines.push(line);
       if (verseEndRegex.test(line)) foundVerseEnd = true;
+
     } else if (!foundMeaning) {
       if (/[\u0D00-\u0D7F]/.test(line)) splitLines.push(line);
       else {
         foundMeaning = true;
         meaningLines.push(line);
       }
+
     } else {
       meaningLines.push(line);
     }
   }
 
   return {
-    verseDev: verseLines.join("\n"),
-    splitDev: splitLines.join("\n"),
-    verseTrans: "",
-    splitTrans: "",
+    verseDev: "",
+    splitDev: "",
+
+    verseMalayalam: verseLines.join("\n"),
+    splitMalayalam: splitLines.join("\n"),
+
+    verseEnglish: "",
+    splitEnglish: "",
+
     meaning: meaningLines.join("\n")
   };
 }
 
-//
 // ----------------------------------------------------------
-// 3) ENGLISH TRANSLITERATION PARSER — CORRECTED
+// 3) ENGLISH TRANSLITERATION
 // ----------------------------------------------------------
-//
 function parseEnglish(lines) {
   const verseLines = [];
-  const translitLines = [];
+  const splitLines = [];
   const meaningLines = [];
 
-  let foundWordSplit = false;
+  let foundSplit = false;
   let foundMeaning = false;
 
   for (const line of lines) {
-
-    if (!foundWordSplit) {
-      // when we hit "word — meaning" pattern (tab or double-space)
+    if (!foundSplit) {
+      // detect split line
       if (/\t/.test(line) || / {2,}/.test(line)) {
-        foundWordSplit = true;
-        translitLines.push(line);
+        foundSplit = true;
+        splitLines.push(line);
       } else {
-        // All plain Sanskrit-in-ASCII lines before split
         verseLines.push(line);
       }
+
     } else if (!foundMeaning) {
-      // If it's a meaning paragraph (normal ASCII sentence)
-      if (/^[A-Za-z].+/.test(line) && !/\t/.test(line) && !/ {2,}/.test(line)) {
+      // detect meaning line
+      if (/^[A-Za-z]/.test(line) && !/\t/.test(line) && !/ {2,}/.test(line)) {
         foundMeaning = true;
         meaningLines.push(line);
       } else {
-        translitLines.push(line);
+        splitLines.push(line);
       }
+
     } else {
       meaningLines.push(line);
     }
   }
 
   return {
-    verseDev: verseLines.join("\n"),
+    verseDev: "",
     splitDev: "",
-    verseTrans: translitLines.join("\n"),
-    splitTrans: translitLines.join("\n"),
+
+    verseMalayalam: "",
+    splitMalayalam: "",
+
+    verseEnglish: verseLines.join("\n"),
+    splitEnglish: splitLines.join("\n"),
+
     meaning: meaningLines.join("\n")
   };
 }
@@ -721,11 +719,14 @@ function emptyResult() {
   return {
     verseDev: "",
     splitDev: "",
-    verseTrans: "",
-    splitTrans: "",
+    verseMalayalam: "",
+    splitMalayalam: "",
+    verseEnglish: "",
+    splitEnglish: "",
     meaning: ""
   };
 }
+
 
 
 
