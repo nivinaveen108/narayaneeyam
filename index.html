@@ -528,7 +528,7 @@ body.light-theme #meaning {
               let cues = [];
               let currentCueIndex = -1;
               let currentDashakam = 1;
-              let showTranslit = false;
+              let showTranslit = true;
               let speedOptions = [1, 1.25, 1.5, 2];
               let speedIndex = 0;
               let speedTimeout = null;
@@ -1206,7 +1206,7 @@ function parseCueText(text) {
             
                 cues = await loadVTT(`${vttFolder}/Narayaneeyam_D${dashNum}.vtt`);
             
-                showTranslit1 = translitState === 'english' || translitState === 'malayalam';
+                showTranslit = translitState === 'english' || translitState === 'malayalam';
             
                 const idx = currentCueIndex >= 0 ? currentCueIndex : 0;
                 if (cues.length > 0) updateSubtitle(idx);
