@@ -417,10 +417,58 @@ body.light-theme #meaning {
   left: 0;
 }
 
+.info-buttons-wrapper {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
 
+/* Darkened blur background */
+.credits-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
 
+/* Modal window */
+.credits-content {
+  background: linear-gradient(
+    180deg,
+    var(--glass-strong, rgba(255,255,255,0.35)),
+    var(--glass-soft, rgba(255,255,255,0.15))
+  );
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.4));
+  border-radius: 14px;
+  padding: 24px 28px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  color: var(--text-primary);
+  text-align: center;
+}
 
+/* Close button */
+.modal-close-btn {
+  margin-top: 20px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
 
+.modal-close-btn:hover {
+  transform: scale(1.05);
+}
 
 
          body.light-theme .font-size-controls button {
@@ -516,7 +564,23 @@ body.light-theme #meaning {
                <i class="fas fa-infinity"></i>
                </button>
                
-                  <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div>
+                  <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div><div id="infoButtonsWrapper" class="info-buttons-wrapper">
+  <button id="aboutBtn" class="top-button" title="About">
+    <div class="icon-wrapper">
+      <i class="fas fa-question-circle"></i>
+      <span class="icon-text">About</span>
+    </div>
+  </button>
+
+  <button id="creditsBtn" class="top-button" title="Credits">
+    <div class="icon-wrapper">
+      <i class="fas fa-info-circle"></i>
+      <span class="icon-text">Credits</span>
+    </div>
+  </button>
+</div>
+
+
             </div>
             <div class="navigate-row">
                <button id="translitToggle">Devanagari</button>
@@ -652,6 +716,48 @@ body.light-theme #meaning {
               repeatVerseBtn.classList.toggle('active', repeatVerse);
               repeatDashakamBtn.classList.toggle('active', repeatDashakam);
             
+
+              // ========== ABOUT MODAL ==========
+              const aboutBtn = document.getElementById("aboutBtn");
+              const aboutModal = document.getElementById("aboutModal");
+              const aboutClose = document.getElementById("aboutClose");
+
+              aboutBtn.onclick = () => {
+                aboutModal.style.display = "flex";
+              };
+
+              aboutClose.onclick = () => {
+                aboutModal.style.display = "none";
+              };
+
+              aboutModal.onclick = (e) => {
+                if (e.target === aboutModal) {
+                  aboutModal.style.display = "none";
+                }
+              };
+
+
+              // ========== CREDITS MODAL ==========
+              const creditsBtn = document.getElementById("creditsBtn");
+              const creditsModal = document.getElementById("creditsModal");
+              const creditsClose = document.getElementById("creditsClose");
+
+              creditsBtn.onclick = () => {
+                creditsModal.style.display = "flex";
+              };
+
+              creditsClose.onclick = () => {
+                creditsModal.style.display = "none";
+              };
+
+              creditsModal.onclick = (e) => {
+                if (e.target === creditsModal) {
+                  creditsModal.style.display = "none";
+                }
+              };
+
+
+
               function timeToSeconds(t) {
                 if (!t) return 0;
                 const p = t.split(':').map(Number);
@@ -2054,5 +2160,62 @@ document.getElementById("vsnBtn").addEventListener("click", () => {
 });
 </script>
       </main>
+
+
+<!-- About Modal -->
+<div id="aboutModal" class="credits-modal" style="display:none;">
+  <div class="credits-content">
+    <h2>About</h2>
+
+    <p><strong>Nārāyaṇīyam Player</strong></p>
+    <p>A devotional tool to listen, follow, and learn the verses of the <strong>Nārāyaṇīyam</strong> with synchronized meanings, playback controls, and custom fonts/themes.</p>
+
+    <h3>Shriman Narayaneeyam</h3>
+    <p>16th-century Sanskrit poem by Melpathoor Narayana Bhattathiri, condensed from the Bhagavata Purana. 1036 verses in 100 chapters (dasakams). Legend: composed in 100 days while the poet was ill; completed on Nov 27, 1587.</p>
+
+    <h4>Key Points</h4>
+    <ul>
+      <li>Origin: Kerala, 1560–1666 A.D.</li>
+      <li>Content: Stories of Lord Vishnu, especially Krishna</li>
+      <li>Structure: 1036 verses in 100 dasakams</li>
+      <li>Title: "Narayaneeyam" = Narayana + Ayanam</li>
+      <li>Significance: Devotional, literary, and philosophical guidance</li>
+    </ul>
+
+    <button id="aboutClose" class="modal-close-btn">Close</button>
+  </div>
+</div>
+
+
+<!-- Credits Modal -->
+<div id="creditsModal" class="credits-modal" style="display:none;">
+  <div class="credits-content">
+    <h2>Credits</h2>
+
+   <p>Audio: 
+  <a href="https://https://vedaclassonline.in/" target="_blank" rel="noopener noreferrer">
+    Shri Viswanatha Raju P H
+  </a>
+</p>
+
+<p>Texts: 
+  <a href="https://narayaneeyam-firststep.org/about.html" target="_blank" rel="noopener noreferrer">
+    Smt. Asha Murarka
+  </a>
+</p>
+
+<p>Translation: 
+  <a href="https://github.com/AI4Bharat/IndicTrans2" target="_blank" rel="noopener noreferrer">
+    AI4Bharat/IndicTrans2
+  </a>
+</p>
+<p>Unintentional Mistakes By: Naveen Natarajan</p>
+    <p>UI/Design inspiration: Apple Music / iOS Glass UI</p>
+
+    <button id="creditsClose" class="modal-close-btn">Close</button>
+  </div>
+</div>
+
+
    </body>
 </html>
