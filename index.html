@@ -725,9 +725,11 @@ body.light-theme .top-button:hover {
               const speedBtn = document.getElementById('speedBtn');
               const muteBtn = document.getElementById('muteBtn');
               const volumeSlider = document.getElementById('volumeSlider');
-              const volumeIcon = document.querySelector('#muteBtn i');
-              // Set initial volume to 25%
+              const volumeIcon = muteBtn.querySelector('i');
+
+              // Set default volume to 25%
               audio.volume = 0.25;
+              volumeSlider.value = audio.volume * 100;
               const timeDisplay = document.getElementById('timeDisplay');
               const verseDiv = document.getElementById('verse');
               const splitWordsDiv = document.getElementById('splitWords');
@@ -1658,24 +1660,33 @@ plus10DashakamBtn.addEventListener('click', async () => {
                 speedTimeout = setTimeout(() => { speedBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i>'; }, 900);
               });
             
-              muteBtn.addEventListener('click', () => {
-                audio.muted = !audio.muted;
-                muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
-              });
 
-              volumeSlider.addEventListener('input', () => {
-              const volume = volumeSlider.value / 100;
-              audio.volume = volume;
-
-              // Update icon dynamically
-              if (volume === 0) {
-                  volumeIcon.className = 'fas fa-volume-mute';
-              } else if (volume <= 0.5) {
-                  volumeIcon.className = 'fas fa-volume-down';
-              } else {
-                  volumeIcon.className = 'fas fa-volume-up';
+             // Update icon helper
+              function updateVolumeIcon() {
+                  if (audio.muted || audio.volume === 0) {
+                      volumeIcon.className = 'fas fa-volume-mute';
+                  } else if (audio.volume <= 0.5) {
+                      volumeIcon.className = 'fas fa-volume-down';
+                  } else {
+                      volumeIcon.className = 'fas fa-volume-up';
+                  }
               }
+
+              // Click on the icon toggles mute
+              volumeIcon.addEventListener('click', () => {
+                  audio.muted = !audio.muted;
+                  updateVolumeIcon();
               });
+
+              // Slider input changes volume
+              volumeSlider.addEventListener('input', () => {
+                  audio.volume = volumeSlider.value / 100;
+                  if (audio.volume > 0 && audio.muted) audio.muted = false;
+                  updateVolumeIcon();
+              });
+
+              // Initialize
+              updateVolumeIcon();
                       
               document.addEventListener('click', (e) => {
                 const panel = document.getElementById('gotoPanel');
