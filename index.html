@@ -1567,15 +1567,26 @@ if (
 
 
             
-/*** DASHAKAM NAVIGATION BUTTONS ***/
+/*** DASHAMAK NAVIGATION BUTTONS ***/
 async function goToDashakam(targetDashakam) {
     if (targetDashakam < 1 || targetDashakam > totalDashakams) return;
 
     const dashStr = String(targetDashakam).padStart(3, '0');
     console.log(`➡️ Loading Dashakam ${dashStr}`);
-    
-    // Load full Dashakam: audio + cues + UI
-    await loadDashakam(dashStr, true);
+
+    const wasPlaying = !audio.paused && !audio.ended;
+    currentDashakam = targetDashakam;
+
+    // Load cues for the current transliteration state
+    await loadTranslitCues(dashStr);
+
+    if (cues.length > 0) {
+        // Jump to first verse of the new Dashakam
+        await jumpToCue(0, wasPlaying);
+    }
+
+    // Highlight Go-to grid if present
+    highlightGoTo();
 }
 
 // Previous Dashakam
