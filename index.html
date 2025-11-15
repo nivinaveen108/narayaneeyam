@@ -1577,15 +1577,31 @@ async function goToDashakam(targetDashakam) {
     const wasPlaying = !audio.paused && !audio.ended;
     currentDashakam = targetDashakam;
 
-    // Load cues for the current transliteration state
+    // Load the audio
+    audio.pause();
+    audio.src = `audio/Narayaneeyam_D${dashStr}.mp3`;
+    audio.load();
+
+    // Restore volume/mute
+    audio.volume = volumeSlider.value / 100;
+    if (audio.volume > 0) audio.muted = false;
+    updateVolumeIcon();
+
+    // Wait for audio metadata to load
+    await new Promise(resolve => {
+        const onMeta = () => { audio.removeEventListener('loadedmetadata', onMeta); resolve(); };
+        audio.addEventListener('loadedmetadata', onMeta);
+        setTimeout(resolve, 2000); // fallback
+    });
+
+    // Load cues for current transliteration
     await loadTranslitCues(dashStr);
 
+    currentCueIndex = -1;
     if (cues.length > 0) {
-        // Jump to first verse of the new Dashakam
         await jumpToCue(0, wasPlaying);
     }
 
-    // Highlight Go-to grid if present
     highlightGoTo();
 }
 
