@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <meta name="description" content="Interactive Nārāyaṇīyam Player — synchronized audio, verse display, and transliteration.">
-      <meta name="theme-color" content="#0f0f10">
-      <title>Nārāyaṇīyam Player — Go to & Transliteration</title>
-      <!-- Fonts -->
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Tiro+Devanagari+Hindi:wght@400;600&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-      <link rel="icon" href="data:,">
-      <style>
-         :root{
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Interactive Nārāyaṇīyam Player — synchronized audio, verse display, and transliteration.">
+    <meta name="theme-color" content="#0f0f10">
+    <title>Nārāyaṇīyam Player — Go to & Transliteration</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Tiro+Devanagari+Hindi:wght@400;600&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:,">
+    <style>
+        :root{
          /* base tokens (light fallback) */
          --ui-font: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
          --deva-font: "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif;
@@ -471,6 +472,22 @@ body.light-theme #meaning {
 }
 
 
+/* Fix About & Credits button text in light theme */
+body.light-theme .top-button,
+body.light-theme .top-button .icon-wrapper,
+body.light-theme .top-button .icon-wrapper i,
+body.light-theme .top-button .icon-wrapper .icon-text {
+    color: #111 !important; /* ensures dark text on light background */
+    border-color: rgba(0,0,0,0.1);
+}
+
+body.light-theme .top-button:hover {
+    background: rgba(0,0,0,0.04);
+    box-shadow: inset 0 6px 18px rgba(0,0,0,0.1);
+}
+
+
+
          body.light-theme .font-size-controls button {
          color: var(--text-primary) !important;
          border-color: rgba(0,0,0,0.1) !important;
@@ -485,161 +502,163 @@ body.light-theme #meaning {
          .group-select{ min-width:100px; font-size:.95rem; padding:7px 10px; }
          #gotoPanel{ width: calc(100vw - 32px); left:8px; right:8px; top:44px; }
          }
-      </style>
-   </head>
-   <body>
-      <main>
-         <h1>Nārāyaṇīyam Player</h1>
-         <!-- top config row - same layout; theme toggle added unobtrusively -->
-         <div id="configRow">
-            <div id="styleSelectorRow">
-               <!-- Theme dots preserved -->
-               <div id="themeDots" class="theme-dots" aria-hidden="true">
-                  <button class="theme-dot" data-theme="dark" aria-label="Dark theme"></button>
-                  <button class="theme-dot" data-theme="light" aria-label="Light theme"></button>
-                  <button class="theme-dot" data-theme="pink" aria-label="Pink theme"></button>
-                  <button class="theme-dot" data-theme="purple" aria-label="Purple theme"></button>
-                  <button class="theme-dot" data-theme="blue" aria-label="Blue theme"></button>
-                  <button class="theme-dot" data-theme="orange" aria-label="Orange theme"></button>
-               </div>
-               <div class="config-divider" aria-hidden="true" style="width:1px;height:26px;background:transparent;"></div>
-               <div id="fontSizeControls" class="font-size-controls" aria-label="Font size controls">
-                  <button id="fontSmaller" title="Decrease font size">A−</button>
-                  <button id="fontLarger" title="Increase font size">A+</button>
-               </div>
-               <!-- UI font swatches -->
-               <div id="uiFontOptions" class="font-options" aria-label="UI font options">
-                  <div class="font-swatch" data-font='"Poppins", "Segoe UI", sans-serif' style="font-family:'Poppins',sans-serif;">Po</div>
-                  <div class="font-swatch" data-font='"Roboto", "Segoe UI", sans-serif' style="font-family:'Roboto',sans-serif;">Ro</div>
-                  <div class="font-swatch" data-font='"Merriweather", serif' style="font-family:'Merriweather',serif;">Me</div>
-               </div>
-               <!-- Devanagari font swatches -->
-               <div id="devaFontOptions" class="font-options" aria-label="Devanagari font options">
-                  <div class="font-swatch" data-font='"Tiro Devanagari Hindi", serif' style="font-family:'Tiro Devanagari Hindi',serif;">ति</div>
-                  <div class="font-swatch" data-font='"Noto Serif Devanagari", serif' style="font-family:'Noto Serif Devanagari',serif;">नो</div>
-                  <div class="font-swatch" data-font='"Mukta Vaani", sans-serif' style="font-family:'Mukta Vaani',sans-serif;">मु</div>
-               </div>
-               <!-- Theme mode toggle (dark/light) - placed in same row, unobtrusive -->
-               <button id="themeModeToggle" title="Toggle Light / Dark theme" aria-pressed="false" style="margin-left:8px;">
-               <span class="accent-pill" aria-hidden="true"></span>
-               <span id="themeModeLabel" style="font-size:.92rem;">Dark</span>
-               </button>
-               <!-- Home and VSN buttons -->
-              <!-- <button id="homeBtn" class="top-button" title="Go to Home">🏠</button> -->
-              <button id="vsnBtn" class="top-button" title="Vishnu Sahasranamam">
-                <div class="icon-wrapper">
-                  <i class="fas fa-hands-pray"></i>
-                  <span class="icon-text">Vishnu Sahasranaamam</span>
-                </div>
-              </button>
+    </style>
+</head>
 
-              <button id="homeBtn" title="Home">
-                <div class="icon-wrapper">
-                  <i class="fa-solid fa-house"></i>
-                  <span class="icon-text">Home</span>
+<body>
+    <main>
+        <h1>Nārāyaṇīyam Player</h1>
+        <!-- top config row - same layout; theme toggle added unobtrusively -->
+        <div id="configRow">
+            <div id="styleSelectorRow">
+                <!-- Theme dots preserved -->
+                <div id="themeDots" class="theme-dots" aria-hidden="true">
+                    <button class="theme-dot" data-theme="dark" aria-label="Dark theme"></button>
+                    <button class="theme-dot" data-theme="light" aria-label="Light theme"></button>
+                    <button class="theme-dot" data-theme="pink" aria-label="Pink theme"></button>
+                    <button class="theme-dot" data-theme="purple" aria-label="Purple theme"></button>
+                    <button class="theme-dot" data-theme="blue" aria-label="Blue theme"></button>
+                    <button class="theme-dot" data-theme="orange" aria-label="Orange theme"></button>
                 </div>
-              </button>
+                <div class="config-divider" aria-hidden="true" style="width:1px;height:26px;background:transparent;"></div>
+                <div id="fontSizeControls" class="font-size-controls" aria-label="Font size controls">
+                    <button id="fontSmaller" title="Decrease font size">A−</button>
+                    <button id="fontLarger" title="Increase font size">A+</button>
+                </div>
+                <!-- UI font swatches -->
+                <div id="uiFontOptions" class="font-options" aria-label="UI font options">
+                    <div class="font-swatch" data-font='"Poppins", "Segoe UI", sans-serif' style="font-family:'Poppins',sans-serif;">Po</div>
+                    <div class="font-swatch" data-font='"Roboto", "Segoe UI", sans-serif' style="font-family:'Roboto',sans-serif;">Ro</div>
+                    <div class="font-swatch" data-font='"Merriweather", serif' style="font-family:'Merriweather',serif;">Me</div>
+                </div>
+                <!-- Devanagari font swatches -->
+                <div id="devaFontOptions" class="font-options" aria-label="Devanagari font options">
+                    <div class="font-swatch" data-font='"Tiro Devanagari Hindi", serif' style="font-family:'Tiro Devanagari Hindi',serif;">ति</div>
+                    <div class="font-swatch" data-font='"Noto Serif Devanagari", serif' style="font-family:'Noto Serif Devanagari',serif;">नो</div>
+                    <div class="font-swatch" data-font='"Mukta Vaani", sans-serif' style="font-family:'Mukta Vaani',sans-serif;">मु</div>
+                </div>
+                <!-- Theme mode toggle (dark/light) - placed in same row, unobtrusive -->
+                <button id="themeModeToggle" title="Toggle Light / Dark theme" aria-pressed="false" style="margin-left:8px;">
+                    <span class="accent-pill" aria-hidden="true"></span>
+                    <span id="themeModeLabel" style="font-size:.92rem;">Dark</span>
+                </button>
+                <!-- Home and VSN buttons -->
+                <!-- <button id="homeBtn" class="top-button" title="Go to Home">🏠</button> -->
+                <button id="vsnBtn" class="top-button" title="Vishnu Sahasranamam">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-hands-pray"></i>
+                        <span class="icon-text">Vishnu Sahasranaamam</span>
+                    </div>
+                </button>
+
+                <button id="homeBtn" title="Home">
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="icon-text">Home</span>
+                    </div>
+                </button>
 
 
             </div>
-         </div>
-         <!-- audio controls - layout completely preserved -->
-         <div id="audioControls" aria-label="Audio controls">
+        </div>
+        <!-- audio controls - layout completely preserved -->
+        <div id="audioControls" aria-label="Audio controls">
             <!-- Main controls row -->
             <div class="control-row">
-               <!-- -10 Dashakam -->
-               <button id="playPauseBtn" class="icon-btn" aria-label="Play or Pause">
-               <i class="fas fa-play"></i>
-               </button>
-               <button id="muteBtn" class="icon-btn" title="Mute" aria-label="Mute or Unmute">
-               <i class="fas fa-volume-up"></i>
-               </button>
-               <button id="speedBtn" class="icon-btn" title="Change Speed" aria-label="Change Playback Speed">
-               <i class="fas fa-tachometer-alt"></i>
-               </button>
-               <button id="repeatVerseBtn" class="icon-btn" title="Repeat Verse" aria-label="Repeat Verse">
-               <i class="fas fa-redo"></i>
-               </button>
-               <button id="repeatDashakamBtn" class="icon-btn" title="Repeat Dashakam" aria-label="Repeat Dashakam">
-               <i class="fas fa-infinity"></i>
-               </button>
-               
-                  <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div><div id="infoButtonsWrapper" class="info-buttons-wrapper">
-  <button id="aboutBtn" class="top-button" title="About">
-    <div class="icon-wrapper">
-      <i class="fas fa-question-circle"></i>
-      <span class="icon-text">About</span>
-    </div>
-  </button>
+                <!-- -10 Dashakam -->
+                <button id="playPauseBtn" class="icon-btn" aria-label="Play or Pause">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button id="muteBtn" class="icon-btn" title="Mute" aria-label="Mute or Unmute">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button id="speedBtn" class="icon-btn" title="Change Speed" aria-label="Change Playback Speed">
+                    <i class="fas fa-tachometer-alt"></i>
+                </button>
+                <button id="repeatVerseBtn" class="icon-btn" title="Repeat Verse" aria-label="Repeat Verse">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button id="repeatDashakamBtn" class="icon-btn" title="Repeat Dashakam" aria-label="Repeat Dashakam">
+                    <i class="fas fa-infinity"></i>
+                </button>
 
-  <button id="creditsBtn" class="top-button" title="Credits">
-    <div class="icon-wrapper">
-      <i class="fas fa-info-circle"></i>
-      <span class="icon-text">Credits</span>
-    </div>
-  </button>
-</div>
+                <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div>
+                <div id="infoButtonsWrapper" class="info-buttons-wrapper">
+                    <button id="aboutBtn" class="top-button" title="About">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-question-circle"></i>
+                            <span class="icon-text">About</span>
+                        </div>
+                    </button>
+
+                    <button id="creditsBtn" class="top-button" title="Credits">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="icon-text">Credits</span>
+                        </div>
+                    </button>
+                </div>
 
 
             </div>
             <div class="navigate-row">
-               <button id="translitToggle">Devanagari</button>
-               <button id="minus10DashakamBtn" class="btn-with-label" aria-label="<< -10">
-               <i class="fas fa-backward"></i>
-               <span class="btn-label-small">−10</span>
-               </button>
-               <button id="prevDashakamBtn" class="btn-with-label" aria-label="Previous Dashakam">
-               <i class="fas fa-step-backward"></i>
-               <span class="btn-label-small">Dashakam</span>
-               </button>
-               <button id="prevVerseBtn" class="btn-with-label" aria-label="Previous Verse">
-               <i class="fas fa-backward"></i>
-               <span class="btn-label-small">Verse</span>
-               </button>
-               <button id="nextVerseBtn" class="btn-with-label" aria-label="Next Verse">
-               <span class="btn-label-small">Verse</span>
-               <i class="fas fa-forward"></i>
-               </button>
-               <button id="nextDashakamBtn" class="btn-with-label" aria-label="Next Dashakam">
-               <span class="btn-label-small">Dashakam</span>
-               <i class="fas fa-step-forward"></i>
-               </button>
-               <!-- +10 Dashakam -->
-               <button id="plus10DashakamBtn" class="btn-with-label" aria-label=" +10 >>">
-               <span class="btn-label-small">+10</span>
-               <i class="fas fa-forward"></i>
-               </button>
+                <button id="translitToggle">Devanagari</button>
+                <button id="minus10DashakamBtn" class="btn-with-label" aria-label="<< -10">
+                    <i class="fas fa-backward"></i>
+                    <span class="btn-label-small">−10</span>
+                </button>
+                <button id="prevDashakamBtn" class="btn-with-label" aria-label="Previous Dashakam">
+                    <i class="fas fa-step-backward"></i>
+                    <span class="btn-label-small">Dashakam</span>
+                </button>
+                <button id="prevVerseBtn" class="btn-with-label" aria-label="Previous Verse">
+                    <i class="fas fa-backward"></i>
+                    <span class="btn-label-small">Verse</span>
+                </button>
+                <button id="nextVerseBtn" class="btn-with-label" aria-label="Next Verse">
+                    <span class="btn-label-small">Verse</span>
+                    <i class="fas fa-forward"></i>
+                </button>
+                <button id="nextDashakamBtn" class="btn-with-label" aria-label="Next Dashakam">
+                    <span class="btn-label-small">Dashakam</span>
+                    <i class="fas fa-step-forward"></i>
+                </button>
+                <!-- +10 Dashakam -->
+                <button id="plus10DashakamBtn" class="btn-with-label" aria-label=" +10 >>">
+                    <span class="btn-label-small">+10</span>
+                    <i class="fas fa-forward"></i>
+                </button>
             </div>
             <!-- Time + transliteration toggle + Go to -->
             <div class="time-row">
-               <div class="time-left">
-                  <div id="currentInfo">Dashakam — Verse —</div>
-               </div>
-               <div class="time-right">
-                  <div id="gotoWrapper">
-                     <button id="gotoToggle">Go to ▾</button>
-                     <div id="gotoPanel" aria-hidden="true">
-                        <div class="group-grid" id="groupGrid">
-                           <!-- groups injected here -->
+                <div class="time-left">
+                    <div id="currentInfo">Dashakam — Verse —</div>
+                </div>
+                <div class="time-right">
+                    <div id="gotoWrapper">
+                        <button id="gotoToggle">Go to ▾</button>
+                        <div id="gotoPanel" aria-hidden="true">
+                            <div class="group-grid" id="groupGrid">
+                                <!-- groups injected here -->
+                            </div>
                         </div>
-                     </div>
-                  </div>
-               </div>
+                    </div>
+                </div>
             </div>
-         </div>
-         <!-- native audio element -->
-         <audio id="audio" preload="auto"></audio>
-         <!-- subtitles (IMPORTANT: container's sizing & padding kept EXACTLY as original) -->
-         <div id="subtitleContainer">
+        </div>
+        <!-- native audio element -->
+        <audio id="audio" preload="auto"></audio>
+        <!-- subtitles (IMPORTANT: container's sizing & padding kept EXACTLY as original) -->
+        <div id="subtitleContainer">
             <div id="overlayImage"></div>
             <!-- NEW foreground overlay -->
             <div id="verse"></div>
             <div id="splitWords"></div>
             <div id="meaning"></div>
-         </div>
-         <!-- full original script preserved with small additions for theme toggling only.
+        </div>
+        <!-- full original script preserved with small additions for theme toggling only.
             All original IDs, event handlers and behavior are kept intact. -->
-         <script>
+        <script>
             /* ===========================
                Original app script (kept functionally the same)
                plus theme-mode toggle handling at the end.
@@ -2149,73 +2168,74 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
               });
             
             }); // end DOMContentLoaded
-         </script>
-         <script>
-document.getElementById("homeBtn").addEventListener("click", () => {
-  window.location.href = "https://www.nivi108.com";
-});
-
-document.getElementById("vsnBtn").addEventListener("click", () => {
-  window.open("https://nivinaveen108.github.io/vsn/", "_blank");
-});
-</script>
-      </main>
-
-
-<!-- About Modal -->
-<div id="aboutModal" class="credits-modal" style="display:none;">
-  <div class="credits-content">
-    <h2>About</h2>
-
-    <p><strong>Nārāyaṇīyam Player</strong></p>
-    <p>A devotional tool to listen, follow, and learn the verses of the <strong>Nārāyaṇīyam</strong> with synchronized meanings, playback controls, and custom fonts/themes.</p>
-
-    <h3>Shriman Narayaneeyam</h3>
-    <p>16th-century Sanskrit poem by Melpathoor Narayana Bhattathiri, condensed from the Bhagavata Purana. 1036 verses in 100 chapters (dasakams). Legend: composed in 100 days while the poet was ill; completed on Nov 27, 1587.</p>
-
-    <h4>Key Points</h4>
-    <ul>
-      <li>Origin: Kerala, 1560–1666 A.D.</li>
-      <li>Content: Stories of Lord Vishnu, especially Krishna</li>
-      <li>Structure: 1036 verses in 100 dasakams</li>
-      <li>Title: "Narayaneeyam" = Narayana + Ayanam</li>
-      <li>Significance: Devotional, literary, and philosophical guidance</li>
-    </ul>
-
-    <button id="aboutClose" class="modal-close-btn">Close</button>
-  </div>
-</div>
+        </script>
+        <script>
+            document.getElementById("homeBtn").addEventListener("click", () => {
+              window.location.href = "https://www.nivi108.com";
+            });
+            
+            document.getElementById("vsnBtn").addEventListener("click", () => {
+              window.open("https://nivinaveen108.github.io/vsn/", "_blank");
+            });
+        </script>
+    </main>
 
 
-<!-- Credits Modal -->
-<div id="creditsModal" class="credits-modal" style="display:none;">
-  <div class="credits-content">
-    <h2>Credits</h2>
+    <!-- About Modal -->
+    <div id="aboutModal" class="credits-modal" style="display:none;">
+        <div class="credits-content">
+            <h2>About</h2>
 
-   <p>Audio: 
-  <a href="https://https://vedaclassonline.in/" target="_blank" rel="noopener noreferrer">
+            <p><strong>Nārāyaṇīyam Player</strong></p>
+            <p>A devotional tool to listen, follow, and learn the verses of the <strong>Nārāyaṇīyam</strong> with synchronized meanings, playback controls, and custom fonts/themes.</p>
+
+            <h3>Shriman Narayaneeyam</h3>
+            <p>16th-century Sanskrit poem by Melpathoor Narayana Bhattathiri, condensed from the Bhagavata Purana. 1036 verses in 100 chapters (dasakams). Legend: composed in 100 days while the poet was ill; completed on Nov 27, 1587.</p>
+
+            <h4>Key Points</h4>
+            <ul>
+                <li>Origin: Kerala, 1560–1666 A.D.</li>
+                <li>Content: Stories of Lord Vishnu, especially Krishna</li>
+                <li>Structure: 1036 verses in 100 dasakams</li>
+                <li>Title: "Narayaneeyam" = Narayana + Ayanam</li>
+                <li>Significance: Devotional, literary, and philosophical guidance</li>
+            </ul>
+
+            <button id="aboutClose" class="modal-close-btn">Close</button>
+        </div>
+    </div>
+
+
+    <!-- Credits Modal -->
+    <div id="creditsModal" class="credits-modal" style="display:none;">
+        <div class="credits-content">
+            <h2>Credits</h2>
+
+            <p>Audio:
+                <a href="https://https://vedaclassonline.in/" target="_blank" rel="noopener noreferrer">
     Shri Viswanatha Raju P H
   </a>
-</p>
+            </p>
 
-<p>Texts: 
-  <a href="https://narayaneeyam-firststep.org/about.html" target="_blank" rel="noopener noreferrer">
+            <p>Texts:
+                <a href="https://narayaneeyam-firststep.org/about.html" target="_blank" rel="noopener noreferrer">
     Smt. Asha Murarka
   </a>
-</p>
+            </p>
 
-<p>Translation: 
-  <a href="https://github.com/AI4Bharat/IndicTrans2" target="_blank" rel="noopener noreferrer">
+            <p>Translation:
+                <a href="https://github.com/AI4Bharat/IndicTrans2" target="_blank" rel="noopener noreferrer">
     AI4Bharat/IndicTrans2
   </a>
-</p>
-<p>Unintentional Mistakes By: Naveen Natarajan</p>
-    <p>UI/Design inspiration: Apple Music / iOS Glass UI</p>
+            </p>
+            <p>Unintentional Mistakes By: Naveen Natarajan</p>
+            <p>UI/Design inspiration: Apple Music / iOS Glass UI</p>
 
-    <button id="creditsClose" class="modal-close-btn">Close</button>
-  </div>
-</div>
+            <button id="creditsClose" class="modal-close-btn">Close</button>
+        </div>
+    </div>
 
 
-   </body>
+</body>
+
 </html>
