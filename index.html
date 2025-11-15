@@ -1567,36 +1567,47 @@ if (
 
 
             
-              /*** Prev/Next Dashakam UI buttons ***/
+/*** DASHAKAM NAVIGATION BUTTONS ***/
+async function goToDashakam(targetDashakam) {
+    if (targetDashakam < 1 || targetDashakam > totalDashakams) return;
+
+    const dashStr = String(targetDashakam).padStart(3, '0');
+    console.log(`➡️ Loading Dashakam ${dashStr}`);
+    
+    // Load full Dashakam: audio + cues + UI
+    await loadDashakam(dashStr, true);
+}
+
+// Previous Dashakam
 prevDashakamBtn.addEventListener('click', async () => {
     if (currentDashakam > 1) {
-        const prevD = String(currentDashakam - 1).padStart(3, '0');
-        await loadDashakam(prevD, true);
+        await goToDashakam(currentDashakam - 1);
     }
 });
 
-
+// Next Dashakam
 nextDashakamBtn.addEventListener('click', async () => {
     if (currentDashakam < totalDashakams) {
-        const nextD = String(currentDashakam + 1).padStart(3, '0');
-        await loadDashakam(nextD, true);  // load audio + cues, autoplay
+        await goToDashakam(currentDashakam + 1);
     }
 });
 
-
+// Jump back 10 Dashakams
 minus10DashakamBtn.addEventListener('click', async () => {
     if (currentDashakam > 1) {
         const target = Math.max(1, currentDashakam - 10);
-        await loadDashakam(String(target).padStart(3, '0'), true);
+        await goToDashakam(target);
     }
 });
 
+// Jump forward 10 Dashakams
 plus10DashakamBtn.addEventListener('click', async () => {
     if (currentDashakam < totalDashakams) {
         const target = Math.min(totalDashakams, currentDashakam + 10);
-        await loadDashakam(String(target).padStart(3, '0'), true);
+        await goToDashakam(target);
     }
 });
+
 
 
             
