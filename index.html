@@ -1274,50 +1274,47 @@ meaningRaw = meaningRaw || "";
             
               /*** Load Dashakam (clean version) ***/
               async function loadDashakam(val, autoPlay = false) {
-                console.log("🔄 Loading Dashakam:", val);
-            
-                currentDashakam = parseInt(val, 10);
-                audio.pause();
-                audio.src = `audio/Narayaneeyam_D${val}.mp3`;
-                audio.preload = "auto";
-                audio.load();
-            
-                // wait for metadata
-                await new Promise(resolve => {
-                  const onMeta = () => {
-                    audio.removeEventListener('loadedmetadata', onMeta);
-                    resolve();
-                  };
-                  audio.addEventListener('loadedmetadata', onMeta);
-                  setTimeout(resolve, 2000);
-                });
-            
-                // load subtitles
-                cues = await loadVTT(`vtt_fixed_output_time/Narayaneeyam_D${val}.vtt`);
-                currentCueIndex = -1;
-                verseDiv.innerHTML = splitWordsDiv.innerHTML = meaningDiv.innerHTML = "";
-            
-               if (cues.length > 0) {
-    currentCueIndex = -1;         // reset index
-    await jumpToCue(0, false);    // safely render first verse
-    updateSubtitle(0);            // force full DOM update
+    console.log("🔄 Loading Dashakam:", val);
+
+    currentDashakam = parseInt(val, 10);
+    audio.pause();
+    audio.src = `audio/Narayaneeyam_D${val}.mp3`;
+    audio.preload = "auto";
+    audio.load();
+
+    // restore volume/mute after loading new audio
+    audio.volume = volumeSlider.value / 100;
+    if (audio.volume > 0) audio.muted = false;
+    updateVolumeIcon();
+
+    // wait for metadata
+    await new Promise(resolve => {
+        const onMeta = () => { audio.removeEventListener('loadedmetadata', onMeta); resolve(); };
+        audio.addEventListener('loadedmetadata', onMeta);
+        setTimeout(resolve, 2000);
+    });
+
+    // load subtitles
+    cues = await loadVTT(`vtt_fixed_output_time/Narayaneeyam_D${val}.vtt`);
+    currentCueIndex = -1;
+    verseDiv.innerHTML = splitWordsDiv.innerHTML = meaningDiv.innerHTML = "";
+
+    if (cues.length > 0) {
+        await jumpToCue(0, false);
+        updateSubtitle(0);
+    }
+
+    highlightGoTo();
+    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+
+    if (autoPlay) {
+        try { await audio.play(); playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>'; }
+        catch(e){ console.warn("Autoplay failed:", e); }
+    }
+
+    console.log(`✅ Dashakam ${val} ready with ${cues.length} verses`);
 }
 
-
-                highlightGoTo();
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            
-                if (autoPlay) {
-                  try {
-                    await audio.play();
-                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                  } catch (e) {
-                    console.warn("Autoplay failed:", e);
-                  }
-                }
-            
-                console.log(`✅ Dashakam ${val} ready with ${cues.length} verses`);
-              }
             
               /*** Jump to cue — robust seek with retries and clear timeupdate suppression ***/
               async function jumpToCue(index, keepPlaying = true) {
