@@ -338,6 +338,52 @@ body.light-theme #meaning {
     text-shadow: none;
     -webkit-font-smoothing: subpixel-antialiased;
 }
+
+
+#muteBtn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px; /* match your other icon buttons */
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5) inset;
+}
+
+#muteBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.6), 0 0 12px rgba(255,45,85,0.06);
+}
+
+#volumeSlider {
+    width: 80px; /* adjust to fit nicely */
+    height: 6px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    -webkit-appearance: none;
+    cursor: pointer;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+#volumeSlider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+
 .top-button {
   border-radius: 12px;
   padding: 8px 12px;
@@ -569,9 +615,10 @@ body.light-theme .top-button:hover {
                 <button id="playPauseBtn" class="icon-btn" aria-label="Play or Pause">
                     <i class="fas fa-play"></i>
                 </button>
-                <button id="muteBtn" class="icon-btn" title="Mute" aria-label="Mute or Unmute">
-                    <i class="fas fa-volume-up"></i>
-                </button>
+                <div id="muteBtn" class="icon-btn" title="Volume" aria-label="Adjust Volume">
+    <i class="fas fa-volume-up"></i>
+    <input type="range" id="volumeSlider" min="0" max="100" value="25">
+</div>
                 <button id="speedBtn" class="icon-btn" title="Change Speed" aria-label="Change Playback Speed">
                     <i class="fas fa-tachometer-alt"></i>
                 </button>
@@ -677,6 +724,10 @@ body.light-theme .top-button:hover {
               const repeatDashakamBtn = document.getElementById('repeatDashakamBtn');
               const speedBtn = document.getElementById('speedBtn');
               const muteBtn = document.getElementById('muteBtn');
+              const volumeSlider = document.getElementById('volumeSlider');
+              const volumeIcon = document.querySelector('#muteBtn i');
+              // Set initial volume to 25%
+              audio.volume = 0.25;
               const timeDisplay = document.getElementById('timeDisplay');
               const verseDiv = document.getElementById('verse');
               const splitWordsDiv = document.getElementById('splitWords');
@@ -1611,7 +1662,21 @@ plus10DashakamBtn.addEventListener('click', async () => {
                 audio.muted = !audio.muted;
                 muteBtn.innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
               });
-            
+
+              volumeSlider.addEventListener('input', () => {
+              const volume = volumeSlider.value / 100;
+              audio.volume = volume;
+
+              // Update icon dynamically
+              if (volume === 0) {
+                  volumeIcon.className = 'fas fa-volume-mute';
+              } else if (volume <= 0.5) {
+                  volumeIcon.className = 'fas fa-volume-down';
+              } else {
+                  volumeIcon.className = 'fas fa-volume-up';
+              }
+              });
+                      
               document.addEventListener('click', (e) => {
                 const panel = document.getElementById('gotoPanel');
                 const toggle = document.getElementById('gotoToggle');
