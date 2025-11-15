@@ -32,6 +32,9 @@
          --is-dark: 1; /* 1 = dark mode, 0 = light mode */
          --dashakam-color: #ff2d55;      /* default dark mode color for Dashakam title */
          --mahapraana-color: var(--accent);
+         --ui-font-scale: 0.85;      /* scale English / UI smaller */
+         --meaning-font-scale: 0.9;  /* scale meaning slightly smaller */
+         --deva-font-scale: 1;       /* main verse stays normal */
     /* default dark mode color for Mahapraana highlighting */
 
          }
@@ -272,20 +275,22 @@ body:not(.light-theme) #currentInfo {
          /* Inside content... keep fonts & sizes exactly as before */
          #verse, #splitWords{ font-family: var(--deva-font); letter-spacing:.02em; text-align:center; }
          #verse{
-         font-size: calc(clamp(1.8rem, 3vw, 2.4rem) * var(--font-scale));
+         font-size: calc(clamp(1.8rem, 3vw, 2.4rem) * var(--font-scale) * var(--deva-font-scale));
          font-weight:700;
          color: var(--text-primary);
          margin-bottom:14px;
-         }
+}
+
          #splitWords{
-         font-size: calc(var(--verse-size) * 0.7 * var(--font-scale));
+         font-size: calc(var(--verse-size) * 0.7 * var(--font-scale) * var(--deva-font-scale));
          font-style: italic;
          color: var(--accent);
          margin-bottom:12px;
-         }
+}
+
          #meaning{
          font-family:var(--ui-font);
-         font-size:1.12rem;
+         font-size: calc(1.12rem * var(--font-scale) * var(--meaning-font-scale));
          color:var(--text-secondary);
          max-width:960px;
          margin:0 auto;
@@ -332,11 +337,14 @@ body.light-theme #subtitleContainer {
 }
 
 body.light-theme #verse,
-body.light-theme #splitWords,
+body.light-theme #splitWords {
+    font-size: calc(var(--verse-size) * var(--deva-font-scale) * var(--font-scale));
+}
 body.light-theme #meaning {
     color: #111;
     text-shadow: none;
     -webkit-font-smoothing: subpixel-antialiased;
+    font-size: calc(1.12rem * var(--font-scale) * var(--meaning-font-scale));
 }
 
 
