@@ -1571,39 +1571,33 @@ if (
 prevDashakamBtn.addEventListener('click', async () => {
     if (currentDashakam > 1) {
         const prevD = String(currentDashakam - 1).padStart(3, '0');
-        currentDashakam -= 1;
-        await loadTranslitCues(prevD);
-        if (cues.length > 0) await jumpToCue(0);
+        await loadDashakam(prevD, true);
     }
 });
+
 
 nextDashakamBtn.addEventListener('click', async () => {
     if (currentDashakam < totalDashakams) {
         const nextD = String(currentDashakam + 1).padStart(3, '0');
-        currentDashakam += 1;
-        await loadTranslitCues(nextD);
-        if (cues.length > 0) await jumpToCue(0);
+        await loadDashakam(nextD, true);  // load audio + cues, autoplay
     }
 });
 
-/*** ±10 Dashakam UI buttons ***/
+
 minus10DashakamBtn.addEventListener('click', async () => {
     if (currentDashakam > 1) {
         const target = Math.max(1, currentDashakam - 10);
-        currentDashakam = target;
-        await loadTranslitCues(String(target).padStart(3, '0'));
-        if (cues.length > 0) await jumpToCue(0);
+        await loadDashakam(String(target).padStart(3, '0'), true);
     }
 });
 
 plus10DashakamBtn.addEventListener('click', async () => {
     if (currentDashakam < totalDashakams) {
         const target = Math.min(totalDashakams, currentDashakam + 10);
-        currentDashakam = target;
-        await loadTranslitCues(String(target).padStart(3, '0'));
-        if (cues.length > 0) await jumpToCue(0);
+        await loadDashakam(String(target).padStart(3, '0'), true);
     }
 });
+
 
             
               /*** Repeat toggles (mutually exclusive, with save + visual feedback) ***/
