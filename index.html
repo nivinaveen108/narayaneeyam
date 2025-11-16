@@ -234,6 +234,7 @@ body.light-theme #currentInfo {
     font-weight: 800;
     font-size: 1.32 rem;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+text-align: center; /* Centers the text horizontally */
 }
 
 body:not(.light-theme) #currentInfo {
@@ -241,6 +242,7 @@ body:not(.light-theme) #currentInfo {
     font-weight: 800;
     font-size: 1.32 rem;
     text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
+text-align: center; /* Centers the text horizontally */
 }
 
          /* SUBTITLE CONTAINER - IMPORTANT: DO NOT CHANGE SIZE/STRUCTURE */
@@ -648,7 +650,6 @@ body.light-theme .top-button:hover {
                     <i class="fas fa-infinity"></i>
                 </button>
 
-                <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div>
                 <div id="infoButtonsWrapper" class="info-buttons-wrapper">
                     <button id="aboutBtn" class="top-button" title="About">
                         <div class="icon-wrapper">
@@ -694,12 +695,6 @@ body.light-theme .top-button:hover {
                     <span class="btn-label-small">+10</span>
                     <i class="fas fa-forward"></i>
                 </button>
-            </div>
-            <!-- Time + transliteration toggle + Go to -->
-            <div class="time-row">
-                <div class="time-left">
-                    <div id="currentInfo">Dashakam — Verse —</div>
-                </div>
                 <div class="time-right">
                     <div id="gotoWrapper">
                         <button id="gotoToggle">Go to ▾</button>
@@ -711,10 +706,19 @@ body.light-theme .top-button:hover {
                     </div>
                 </div>
             </div>
+            <!-- Time + transliteration toggle + Go to -->
+            <div class="time-row">
+                <div class="time-left">
+                    	
+                </div>
+
+            </div>
         </div>
         <!-- native audio element -->
         <audio id="audio" preload="auto"></audio>
         <!-- subtitles (IMPORTANT: container's sizing & padding kept EXACTLY as original) -->
+		<div id="currentInfo">Dashakam — Verse —</div>
+                <div id="timeDisplay" style="text-align: right;">Elapsed: 00:00 | Remaining: 00:00 | Total Elapsed: 00:00 | Total Remaining: 00:00</div>
         <div id="subtitleContainer">
             <div id="overlayImage"></div>
             <!-- NEW foreground overlay -->
