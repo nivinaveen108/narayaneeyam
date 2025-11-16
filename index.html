@@ -1482,19 +1482,17 @@ if (
     if (currentDashakam < totalDashakams) {
     const nextD = String(currentDashakam + 1).padStart(3, '0');
     console.log(`➡️ Moving to next Dashakam ${nextD}`);
-    await loadDashakam(nextD, true);
+    // load next dashakam audio
+await loadDashakam(nextD, false);
 
-    if (cues.length > 0) {
-        await jumpToCue(0, true);  // sets audio
-      // --- TRIPLE TOGGLE FIX ---
-      const originalState = showTranslit;
-      for (let i = 0; i < 3; i++) {
-        showTranslit = !showTranslit;
-        updateSubtitle(0);
-      }
-      showTranslit = originalState;  // restore original state
-      updateSubtitle(0);             // final correct render
-    }
+// NOW load transliteration-aware subtitles (IMPORTANT!)
+await loadTranslitCues(nextD);    
+
+// jump to first cue
+if (cues.length > 0) {
+    await jumpToCue(0, true);
+}
+
 }
  else {
         console.log("🛑 End of final Dashakam");
