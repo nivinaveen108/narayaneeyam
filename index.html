@@ -2386,12 +2386,15 @@ document.querySelectorAll(".theme-dot").forEach(dot => {
               window.location.href = "https://www.nivi108.com";
             });
             
-            document.getElementById("vsnBtn").addEventListener("click", () => {
-              window.open("https://nivinaveen108.github.io/vsn/", "_blank");
-            }); 
-            document.getElementById("lsnBtn").addEventListener("click", () => {
-              window.open("https://nivinaveen108.github.io/lsn/", "_blank");
-            });
+document.getElementById("vsnBtn").addEventListener("click", () => {
+    // This loads the new URL in the current browser tab/window
+    window.location.href = "https://nivinaveen108.github.io/vsn/";
+});
+document.getElementById("lsnBtn").addEventListener("click", () => {
+    // This loads the new URL in the current browser tab/window
+    window.location.href = "https://nivinaveen108.github.io/lsn/";
+});
+
 
         </script>
     </main>
