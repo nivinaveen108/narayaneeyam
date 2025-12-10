@@ -420,7 +420,9 @@ body.light-theme #meaning {
 
 /* Unified Premium Glass Buttons (consistent with the theme) */
 #homeBtn,
-#vsnBtn {
+#vsnBtn,
+#lsnBtn /* Added the new button ID here */
+{
   font-family: var(--ui-font);
   padding: 10px 16px;
   border-radius: 12px;
@@ -448,7 +450,9 @@ body.light-theme #meaning {
 
 /* Hover — subtle lift */
 #homeBtn:hover,
-#vsnBtn:hover {
+#vsnBtn:hover,
+#lsnBtn:hover /* Added the new button ID here */
+{
   transform: translateY(-2px);
   box-shadow:
     inset 0 6px 22px rgba(0,0,0,0.55),
@@ -458,15 +462,86 @@ body.light-theme #meaning {
 
 /* Pressed */
 #homeBtn:active,
-#vsnBtn:active {
+#vsnBtn:active,
+#lsnBtn:active /* Added the new button ID here */
+{
   transform: scale(0.97);
   box-shadow:
     inset 0 4px 14px rgba(0,0,0,0.6),
     0 2px 6px rgba(0,0,0,0.4);
 }
 
-/* VSN button keeps its center alignment exactly as before */
-#vsnBtn {
+/* VSN button and LSN button keeps their center alignment */
+#vsnBtn,
+#lsnBtn /* Added the new button ID here */
+{
+  position: relative;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Home button stays as-is (top-left) */
+#homeBtn {
+  position: relative;
+  top: 0;
+  left: 0;
+}/* Unified Premium Glass Buttons (consistent with the theme) */
+#homeBtn,
+#vsnBtn,
+#lsnBtn /* Added the new button ID here */
+{
+  font-family: var(--ui-font);
+  padding: 10px 16px;
+  border-radius: 12px;
+
+  /* Glass look */
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.02)
+  );
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+
+  /* Soft inner + outer shadow */
+  box-shadow:
+    inset 0 6px 20px rgba(0,0,0,0.45),
+    0 6px 22px rgba(0,0,0,0.55);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  transition: all 0.22s ease;
+  cursor: pointer;
+}
+
+/* Hover — subtle lift */
+#homeBtn:hover,
+#vsnBtn:hover,
+#lsnBtn:hover /* Added the new button ID here */
+{
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 6px 22px rgba(0,0,0,0.55),
+    0 10px 28px rgba(0,0,0,0.6),
+    0 0 14px var(--accent-soft);
+}
+
+/* Pressed */
+#homeBtn:active,
+#vsnBtn:active,
+#lsnBtn:active /* Added the new button ID here */
+{
+  transform: scale(0.97);
+  box-shadow:
+    inset 0 4px 14px rgba(0,0,0,0.6),
+    0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* VSN button and LSN button keeps their center alignment */
+#vsnBtn,
+#lsnBtn /* Added the new button ID here */
+{
   position: relative;
   margin: 0 auto;
   display: block;
@@ -478,7 +553,6 @@ body.light-theme #meaning {
   top: 0;
   left: 0;
 }
-
 .info-buttons-wrapper {
   display: flex;
   gap: 10px;
@@ -609,21 +683,31 @@ body.light-theme .top-button:hover {
                     <span class="accent-pill" aria-hidden="true"></span>
                     <span id="themeModeLabel" style="font-size:.92rem;">Dark</span>
                 </button>
-                <!-- Home and VSN buttons -->
-                <!-- <button id="homeBtn" class="top-button" title="Go to Home">🏠</button> -->
-                <button id="vsnBtn" class="top-button" title="Vishnu Sahasranamam">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-hands-pray"></i>
-                        <span class="icon-text">Vishnu Sahasranaamam</span>
-                    </div>
-                </button>
+<!-- Home and VSN buttons -->
+<!-- <button id="homeBtn" class="top-button" title="Go to Home">🏠</button> -->
 
-                <button id="homeBtn" title="Home">
-                    <div class="icon-wrapper">
-                        <i class="fa-solid fa-house"></i>
-                        <span class="icon-text">Home</span>
-                    </div>
-                </button>
+<button id="vsnBtn" class="top-button" title="Vishnu Sahasranamam">
+    <div class="icon-wrapper">
+        <i class="fas fa-hands-pray"></i>
+        <span class="icon-text">Vishnu Sahasranamam</span>
+    </div>
+</button>
+
+<!-- New Button Added -->
+<button id="lsnBtn" class="top-button" title="Lalita Sahasranaamam">
+    <div class="icon-wrapper">
+        <!-- You might want a specific icon here if you have one, e.g., a flower icon -->
+        <i class="fas fa-lotus"></i> 
+        <span class="icon-text">Lalita Sahasranaamam</span>
+    </div>
+</button>
+
+<button id="homeBtn" title="Home">
+    <div class="icon-wrapper">
+        <i class="fa-solid fa-house"></i>
+        <span class="icon-text">Home</span>
+    </div>
+</button>
 
 
             </div>
